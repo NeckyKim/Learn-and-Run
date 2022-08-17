@@ -228,6 +228,7 @@ function Home({ userObject }) {
                                 </div>
                                 :
                                 <div>
+                                    ---강의목록---
                                     {
                                         studentsClasses.map((current) => (
                                             <div>
@@ -241,15 +242,6 @@ function Home({ userObject }) {
                                             </div>
                                         ))
                                     }
-
-                                    <br/><br/><br/>
-                                    <div>
-                                        강사에게 하단의 코드를 보여주면, 강의에 등록됩니다.
-                                    </div>
-
-                                    <div>
-                                        {userObject.uid}
-                                    </div>
                                 </div>
                         }
                     </div>
@@ -267,15 +259,27 @@ function Home({ userObject }) {
                         <br />
 
                         유형
-                        <input
-                            type="text"
-                            name="userType"
-                            value={inputUserType}
-                            onChange={onChange}
-                            maxLength={30}
-                            required
-                        />
-                        <br />
+                        <label>
+                            <input
+                                type="radio"
+                                name="userType"
+                                value="student"
+                                checked={inputUserType === "student"}
+                                onChange={onChange}
+                            />
+                            학생
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="userType"
+                                value="teacher"
+                                checked={inputUserType === "teacher"}
+                                onChange={onChange}
+                            />
+                            강사
+                        </label>
+                        <br /><br />
 
                         <input type="submit" value="정보 입력" />
                         <br /><br />

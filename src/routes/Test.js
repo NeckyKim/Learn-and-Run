@@ -15,6 +15,7 @@ import { query } from "firebase/firestore";
 import { orderBy } from "firebase/firestore";
 import { where } from "firebase/firestore";
 
+import Question from "./Question";
 
 
 function Test({ userObject }) {
@@ -30,29 +31,19 @@ function Test({ userObject }) {
     const [myStudents, setMyStudents] = useState([]);
 
     const [isCreatingQuestion, setIsCreatingQuestion,] = useState(false);
-    const [inputQuestion, setInputQuestion] = useState("");
-    const [inputAnswer, setInputAnswer] = useState("");
+    const [inputQuestion, setInputQuestion] = useState(null);
+    const [inputAnswer, setInputAnswer] = useState(null);
+    const [inputPoints, setInputPoints] = useState(null);
 
-    var [inputStudentsAnswers, setInputStudentsAnswers] = useState({
-        answer01: "",
-        answer02: "",
-        answer03: "",
-        answer04: "",
-        answer05: "",
-        answer06: "",
-        answer07: "",
-        answer08: "",
-        answer09: "",
-        answer10: "",
-    });
-
+    const [answerSheet, setAnswerSheet] = useState({});
+    const [answerSheetMessage, setAnswerSheetMessage] = useState("")
 
 
     // 사용자 정보 불러오기
     useEffect(() => {
         const myQuery = query(
             collection(dbService, "users"),
-            where(documentId(), "==", userObject.uid),
+            where(documentId(), "==", userObject.uid)
         );
 
         onSnapshot(myQuery, (snapshot) => {
@@ -73,7 +64,7 @@ function Test({ userObject }) {
     useEffect(() => {
         const myQuery = query(
             collection(dbService, "classes"),
-            where("teacherId", "==", userObject.uid),
+            where("teacherId", "==", userObject.uid)
         );
 
         onSnapshot(myQuery, (snapshot) => {
@@ -90,7 +81,7 @@ function Test({ userObject }) {
     // 자신이 생성한 시험인지 확인
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/tests/"),
+            collection(dbService, "classes", classCode, "tests"),
             orderBy("testName", "asc")
         );
 
@@ -108,7 +99,7 @@ function Test({ userObject }) {
     // 추가한 학생 정보 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/students/"),
+            collection(dbService, "classes", classCode, "students"),
             orderBy("name", "asc")
         );
 
@@ -153,8 +144,8 @@ function Test({ userObject }) {
     // 시험 정보 
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/tests/"),
-            where(documentId(), "==", testCode),
+            collection(dbService, "classes", classCode, "tests"),
+            where(documentId(), "==", testCode)
         );
 
         onSnapshot(myQuery, (snapshot) => {
@@ -162,7 +153,7 @@ function Test({ userObject }) {
                 testName: current.testName,
                 testDate: current.testDate,
                 testTime: current.testTime,
-                testAvailable: current.testAvailable,
+                testStatus: current.testStatus,
 
                 ...current.data()
             }));
@@ -176,12 +167,14 @@ function Test({ userObject }) {
     // 생성한 문제 정보 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/tests/" + testCode + "/questions"),
-            orderBy("number", "asc")
+            collection(dbService, "classes", classCode, "tests", testCode, "questions"),
+            orderBy("createdAt", "asc")
         );
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
+                id: current.id,
+                points: current.points,
                 number: current.number,
                 question: current.question,
                 answer: current.answer,
@@ -195,39 +188,37 @@ function Test({ userObject }) {
 
 
 
+    // 제출되어있는 답안지 불러오기
+    useEffect(() => {
+        const myQuery = query(
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            where(documentId(), "==", userObject.uid)
+        );
+
+        onSnapshot(myQuery, (snapshot) => {
+            const tempArray = snapshot.docs.map((current) => ({
+                ...current.data()
+            }));
+
+            setAnswerSheet(tempArray[0]);
+        });
+    }, [])
+
+
+
     function onChange(event) {
         const { target: { name, value } } = event;
 
-        if (name === "question") {
+        if (name === "points") {
+            setInputPoints(value);
+        }
+
+        else if (name === "question") {
             setInputQuestion(value);
         }
 
         else if (name === "answer") {
             setInputAnswer(value);
-        }
-
-        else if (name === "studentsAnswer01") {
-            setInputStudentsAnswers((prev) => {
-                return {
-                    ...prev, answer01: value
-                }
-            });
-        }
-
-        else if (name === "studentsAnswer02") {
-            setInputStudentsAnswers((prev) => {
-                return {
-                    ...prev, answer02: value
-                }
-            });
-        }
-
-        else if (name === "studentsAnswer03") {
-            setInputStudentsAnswers((prev) => {
-                return {
-                    ...prev, answer03: value
-                }
-            });
         }
     }
 
@@ -236,8 +227,9 @@ function Test({ userObject }) {
     async function createQuestion(event) {
         event.preventDefault();
 
-        await addDoc(collection(dbService, "classes/" + classCode + "/tests/" + testCode + "/questions"), {
-            number: myQuestions.length + 1,
+        await addDoc(collection(dbService, "classes", classCode, "tests", testCode, "questions"), {
+            createdAt: Date.now(),
+            points: inputPoints,
             question: inputQuestion,
             answer: inputAnswer,
         });
@@ -245,61 +237,82 @@ function Test({ userObject }) {
         setIsCreatingQuestion(false);
         setInputQuestion("");
         setInputAnswer("");
+        setInputPoints("");
     }
 
 
 
-    async function sendAnswers(event) {
+    async function sendAnswerSheet(event) {
         event.preventDefault();
 
         try {
-            await setDoc(doc(dbService, "classes/" + classCode + "/tests/" + testCode + "/studentsAnswers", userObject.uid), {
-                studentName: currentUserData.name,
-                studentId: userObject.uid,
-                answer01: inputStudentsAnswers.answer01,
-                answer02: inputStudentsAnswers.answer02,
-                answer03: inputStudentsAnswers.answer03,
-                answer04: inputStudentsAnswers.answer04,
-                answer05: inputStudentsAnswers.answer05,
-                answer06: inputStudentsAnswers.answer06,
-                answer07: inputStudentsAnswers.answer07,
-                answer08: inputStudentsAnswers.answer08,
-                answer09: inputStudentsAnswers.answer09,
-                answer10: inputStudentsAnswers.answer10,
-            });
-    
-            alert("정상적으로 제출되었습니다.");
+            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), answerSheet);
+
+            setAnswerSheetMessage("정상적으로 제출되었습니다." + `${Date(Date.now())}`);
+            console.log(Date(Date.now()))
         }
-        
-        catch(error) {
-            alert("제출 과정에서 오류가 발생했습니다.")
+
+        catch (error) {
+            setAnswerSheetMessage("제출 과정에서 오류가 발생했습니다.");
+            console.log(error);
         }
     }
 
 
 
-    async function changeTestAvailable() {
+    async function changeTestStatus() {
         let ok;
 
-        if (!(testInfo[0]?.testAvailable)) {
+        if (testInfo[0]?.testStatus === "before") {
             ok = window.confirm("시험을 공개로 전환하겠습니까?")
 
             if (ok) {
-                await updateDoc(doc(dbService, "classes/" + classCode + "/tests/" + testCode), {
-                    testAvailable: !(testInfo[0]?.testAvailable),
+                await updateDoc(doc(dbService, "classes", classCode, "tests", testCode), {
+                    testStatus: "available",
                 });
             }
         }
-        
+
         else {
             ok = window.confirm("시험을 비공개로 전환하겠습니까?")
 
             if (ok) {
-                await updateDoc(doc(dbService, "classes/" + classCode + "/tests/" + testCode), {
-                    testAvailable: !(testInfo[0]?.testAvailable),
+                await updateDoc(doc(dbService, "classes", classCode, "tests", testCode), {
+                    testStatus: "before",
                 });
             }
         }
+    }
+
+
+
+    const mapStyle = {
+        border: "1px solid rgb(200, 200, 200)",
+        width: "fit-content",
+        margin: "20px",
+        padding: "20px",
+        fontSize: "1rem",
+        fontWeight: "bold",
+    }
+
+    const inputQStyle = {
+        border: "1px solid rgb(200, 200, 200)",
+        width: "90vw",
+        height: "400px",
+        padding: "10px",
+        fontSize: "1rem",
+        fontWeight: "bold",
+        resize: "none"
+    }
+
+    const inputAStyle = {
+        border: "1px solid rgb(200, 200, 200)",
+        width: "90vw",
+        height: "100px",
+        padding: "10px",
+        fontSize: "1rem",
+        fontWeight: "bold",
+        resize: "none"
     }
 
 
@@ -311,7 +324,8 @@ function Test({ userObject }) {
             {currentUserData.userType}
             <br />
             {currentUserData.name}
-            <br /><br />
+            <br /><br />          
+
             {
                 myClasses.includes(classCode) && myTests.includes(testCode) && currentUserData.userType === "teacher"
                     ?
@@ -325,30 +339,23 @@ function Test({ userObject }) {
                         <br />
                         시험 코드 : {testCode}
                         <br />
-                        응시 가능 날짜 : {testInfo[0]?.testDate}
+                        응시 가능 날짜 : {Date(testInfo[0]?.testDate)}
                         <br />
-                        응시 시간 : {testInfo[0]?. testTime}
+                        응시 시간 : {testInfo[0]?.testTime}
                         <br />
-                        시험 공개 여부 : {testInfo[0]?.testAvailable ? "공개됨" : "비공개"}
+                        진행 상황 : {testInfo[0]?.testStatus === "available" ? "진행 중[시험지 공개 됨]" : "진행 전"}
+                        <button onClick={changeTestStatus}>
+                            {testInfo[0]?.testStatus === "available" ? "시험 중지" : "시험 시작"}
+                        </button>
                         <br /><br />
 
                         <div>
                             {
-                                myQuestions.map((current) => (
-                                    <div>
-                                        <div>
-                                            [번호] {current.number}
-                                        </div>
-                                        <div>
-                                            [질문] {current.question}
-                                        </div>
-                                        <div>
-                                            [정답] {current.answer}
-                                        </div>
-                                        <br />
+                                myQuestions.map((current, index) => (
+                                    <div style={mapStyle}>
+                                        <Question number={index} points={current.points} question={current.question} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={currentUserData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} />
                                     </div>
                                 ))
-
                             }
                         </div>
                         <br />
@@ -360,59 +367,79 @@ function Test({ userObject }) {
                                     <button onClick={() => {
                                         setIsCreatingQuestion(!isCreatingQuestion);
                                     }}>
-                                        문제 만들기
+                                        문제 생성
                                     </button>
                                 </div>
+
                                 :
-                                <div>
-                                    <form onSubmit={createQuestion}>
+
+                                <form style={mapStyle} onSubmit={createQuestion}>
+                                    <div>
                                         [번호]&nbsp;
                                         {myQuestions.length + 1}
                                         <br />
+                                    </div>
 
-                                        [질문]&nbsp;
+                                    <div>
+                                        [배점]&nbsp;
                                         <input
+                                            type="number"
+                                            name="points"
+                                            value={inputPoints}
+                                            onChange={onChange}
+                                            required
+                                        />점
+                                    </div>
+
+                                    <div>
+                                        [질문]
+                                        <br />
+                                        <textarea
                                             type="text"
                                             name="question"
                                             value={inputQuestion}
                                             onChange={onChange}
                                             required
+                                            spellCheck="false"
+                                            style={inputQStyle}
                                         />
-                                        <br />
+                                    </div>
 
-                                        [정답]&nbsp;
-                                        <input
+                                    <div>
+                                        [정답]
+                                        <br />
+                                        <textarea
                                             type="text"
                                             name="answer"
                                             value={inputAnswer}
                                             onChange={onChange}
                                             required
+                                            spellCheck="false"
+                                            style={inputAStyle}
                                         />
-                                        <br />
+                                    </div>
 
-                                        <input
-                                            type="submit"
-                                            value="문제 만들기"
-                                        />
-                                    </form>
+                                    <input
+                                        type="submit"
+                                        value="출제"
+                                    />
 
-                                    <button onClick={() => {
-                                        setIsCreatingQuestion(!isCreatingQuestion);
-                                        setInputQuestion("");
-                                        setInputAnswer("");
-                                    }}>
-                                        문제 만들기 취소
+                                    <button
+                                        onClick={() => {
+                                            setIsCreatingQuestion(false);
+                                            setInputQuestion("");
+                                            setInputAnswer("");
+                                            setInputPoints("");
+                                        }}>
+                                        취소
                                     </button>
-                                    <br /><br />
-                                </div>
+                                </form>
                         }
-
-                        <button onClick={changeTestAvailable}>
-                            {testInfo[0]?.testAvailable ? "시험 비공개하기" : "시험 공개하기"}
-                        </button>
                         <br /><br />
                     </div>
+
                     :
+
                     <div>
                         {
                             myStudents.map(row => row.studentId).includes(userObject.uid) && currentUserData.userType === "student"
@@ -422,68 +449,50 @@ function Test({ userObject }) {
                                     <br />
 
                                     강사 이름 : {classInfo[0]?.teacherName}
-                                    <br />
+                                    <br /><br />
 
                                     시험 이름 : {testInfo[0]?.testName}
                                     <br />
-                                    
-                                    {
-                                        testInfo[0]?.testAvailable
-                                        &&
-                                        <div>
-                                            응시 가능 날짜 : {testInfo[0]?.testDate}
-                                            <br />
 
-                                            응시 시간 : {testInfo[0]?.testTime}
-                                            <br />
-                                        </div>
+                                    {
+                                        testInfo[0]?.testStatus === "available"
+                                            ?
+                                            <div>
+                                                응시 가능 날짜 : {Date(testInfo[0]?.testDate)}
+                                                <br />
+
+                                                응시 시간 : {testInfo[0]?.testTime}
+                                                <br />
+
+                                                진행 상황 : 진행 중
+                                            </div>
+                                            :
+                                            <div>
+                                                현재 응시 불가
+                                            </div>
                                     }
                                     <br />
 
-                                    {testInfo[0]?.testAvailable ? "현재 응시 가능" : "현재 응시 불가"}
-                                    <br /><br />
-
                                     {
-                                        testInfo[0]?.testAvailable
+                                        testInfo[0]?.testStatus === "available"
                                         &&
-                                        <form onSubmit={sendAnswers}>
+                                        <div>
                                             {
-                                                typeof (myQuestions[0]) === "object" &&
-                                                <div>
-                                                    [번호] {myQuestions[0].number}<br />
-                                                    [질문] {myQuestions[0].question}<br />
-                                                    [응답] <input type="text" name="studentsAnswer01" onChange={onChange} value={inputStudentsAnswers.answer01} />
-                                                    <br />
-                                                </div>
+                                                myQuestions.map((current, index) => (
+                                                    <div style={mapStyle}>
+                                                        <Question number={index} points={current.points} question={current.question} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={currentUserData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} />
+                                                    </div>
+                                                ))
                                             }
-
-                                            {
-                                                typeof (myQuestions[1]) === "object" &&
-                                                <div>
-                                                    [번호] {myQuestions[1].number}<br />
-                                                    [질문] {myQuestions[1].question}<br />
-                                                    [응답] <input type="text" name="studentsAnswer02" onChange={onChange} value={inputStudentsAnswers.answer02} />
-                                                    <br />
-                                                </div>
-                                            }
-
-                                            {
-                                                typeof (myQuestions[2]) === "object" &&
-                                                <div>
-                                                    [번호] {myQuestions[2].number}<br />
-                                                    [질문] {myQuestions[2].question}<br />
-                                                    [응답] <input type="text" name="studentsAnswer03" onChange={onChange} value={inputStudentsAnswers.answer03} />
-                                                    <br />
-                                                </div>
-                                            }
+                                            <button onClick={sendAnswerSheet}>
+                                                제출
+                                            </button>
+                                            {answerSheetMessage}
 
                                             <br /><br />
-                                            <input
-                                                type="submit"
-                                                value="제출하기"
-                                            />
-                                        </form>
+                                        </div>
                                     }
+
                                 </div>
                                 :
                                 <div>

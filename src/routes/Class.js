@@ -10,6 +10,7 @@ import { FieldPath } from "firebase/firestore";
 import { doc } from "firebase/firestore";
 import { addDoc } from "firebase/firestore";
 import { setDoc } from "firebase/firestore";
+import { updateDoc } from "firebase/firestore";
 import { getDocs } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { query } from "firebase/firestore";
@@ -28,7 +29,7 @@ function Class({ userObject }) {
     const [myTests, setMyTests] = useState([]);
     const [currentUserData, setCurrentUserData] = useState([]);
     const [myStudents, setMyStudents] = useState([]);
-    const [findingEmail, setFindingEmail] = useState("");
+    const [studentClassInfo, setStudentsClassInfo] = useState([]);
     const [findingEmailResults, setFindingEmailResults] = useState([]);
 
     const [isCreatingTest, setIsCreatingTest] = useState(false);
@@ -38,8 +39,6 @@ function Class({ userObject }) {
 
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [inputStudentEmail, setInputStudentEmail] = useState("");
-    const [inputStudentName, setInputStudentName] = useState("");
-    const [inputStudentId, setInputStudentId] = useState("");
 
 
 
@@ -115,7 +114,7 @@ function Class({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                testCode: current.id,
+                id: current.id,
                 testName: current.testName,
 
                 ...current.data()
@@ -136,6 +135,7 @@ function Class({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
+                authenticate: current.authenticate,
                 name: current.name,
                 email: current.email,
 
@@ -147,6 +147,26 @@ function Class({ userObject }) {
     }, [])
 
 
+    // 학생이 자신의 강의 정보 불러오기
+    useEffect(() => {
+        const myQuery = query(
+            collection(dbService, "classes/" + classCode + "/students/"),
+            where(documentId(), "==", userObject.uid)
+        );
+
+        onSnapshot(myQuery, (snapshot) => {
+            const tempArray = snapshot.docs.map((current) => ({
+                authenticate: current.authenticate,
+
+                ...current.data()
+            }));
+
+            setStudentsClassInfo(tempArray[0]);
+        });
+    }, [])
+
+
+
 
     function onChange(event) {
         const { target: { name, value } } = event;
@@ -155,16 +175,8 @@ function Class({ userObject }) {
             setInputTestName(value);
         }
 
-        else if (name === "studentName") {
-            setInputStudentName(value);
-        }
-
         else if (name === "studentEmail") {
             setInputStudentEmail(value);
-        }
-
-        else if (name === "studentCode") {
-            setInputStudentId(value);
         }
 
         else if (name === "testDate") {
@@ -191,11 +203,21 @@ function Class({ userObject }) {
             testName: inputTestName,
             testDate: timeConverter(inputTestDate),
             testTime: inputTestTime,
-            testAvailable: false,
+            testStatus: "before",
         });
 
         setIsCreatingTest(false);
         setInputTestName("");
+    }
+
+
+
+    async function deleteTest(testCode) {
+        const ok = window.confirm("해당 시험을 삭제하시겠습니까?")
+
+        if (ok) {
+            await deleteDoc(doc(dbService, "classes", classCode, "tests", testCode));
+        }
     }
 
 
@@ -226,19 +248,31 @@ function Class({ userObject }) {
     async function addStudent(event) {
         event.preventDefault();
 
-        await setDoc(doc(dbService, "classes/" + classCode + "/students", findingEmailResults[0]?.userId), {
-            studentId: findingEmailResults[0]?.userId,
-            name: findingEmailResults[0]?.name,
-            email: findingEmailResults[0]?.email,
-        });
+        try {
+            await setDoc(doc(dbService, "classes/" + classCode + "/students", findingEmailResults[0]?.userId), {
+                studentId: findingEmailResults[0]?.userId,
+                name: findingEmailResults[0]?.name,
+                email: findingEmailResults[0]?.email,
+                authenticate: false,
+            });
+    
+            await setDoc(doc(dbService, "users/" + findingEmailResults[0]?.userId + "/classes", classCode), {
+                classCode: classCode,
+                className: classInfo[0]?.className,
+                teacherName: classInfo[0]?.teacherName,
+            });
+    
+            setIsAddingStudent(false);
+            setInputStudentEmail("");
+            setFindingEmailResults([]);
 
-        await setDoc(doc(dbService, "users/" + findingEmailResults[0]?.userId + "/classes", classCode), {
-            classCode: classCode,
-            className: classInfo[0]?.className,
-            teacherName: classInfo[0]?.teacherName,
-        });
+            alert("학생에게 인증을 요청했습니다.")
+        }
 
-        setIsAddingStudent(false);
+        catch (error) {
+            alert(error);
+        }
+        
     }
 
 
@@ -247,12 +281,18 @@ function Class({ userObject }) {
         const ok = window.confirm("해당 학생을 삭제하시겠습니까?")
 
         if (ok) {
-            await deleteDoc(doc(dbService, "classes/" + classCode + "/students/" + studentId));
-            await deleteDoc(doc(dbService, "users/" + studentId + "/classes/" + classCode));
+            await deleteDoc(doc(dbService, "classes", classCode, "students", studentId));
+            await deleteDoc(doc(dbService, "users", studentId, "classes", classCode));
         }
     }
 
 
+
+    async function acceptAuthenticate () {
+        await updateDoc(doc(dbService, "classes", classCode, "students", userObject.uid), {
+            authenticate: true,
+        });
+    }
 
 
 
@@ -352,37 +392,32 @@ function Class({ userObject }) {
                                 :
                                 <div>
                                     학생 이메일
-                                        <input
-                                            type="email"
-                                            name="studentEmail"
-                                            value={inputStudentEmail}
-                                            onChange={onChange}
-                                            maxLength={30}
-                                            required
-                                        />
-                                        <br />
+                                    <input
+                                        type="email"
+                                        name="studentEmail"
+                                        value={inputStudentEmail}
+                                        onChange={onChange}
+                                        maxLength={30}
+                                        required
+                                    />
 
-                                        <button onClick={() => {
-                                            findStudentByEmail(inputStudentEmail);
-                                        }}>
-                                            이메일로 찾기
+                                    <button onClick={() => {
+                                        findStudentByEmail(inputStudentEmail);
+                                    }}>
+                                        이메일로 찾기
+                                    </button>
+
+                                    {
+                                        findingEmailResults[0]?.userId
+                                        &&
+                                        findingEmailResults[0]?.userType === "student"
+                                        &&
+                                        <button onClick={addStudent}>
+                                            학생 인증 요청
                                         </button>
-                                        <br />
-
-                                        <div>
-                                            {findingEmailResults[0]?.name}
-                                            < br />
-                                            {findingEmailResults[0]?.userId}
-                                            < br />
-                                        </div>
-
-                                    <form onSubmit={addStudent}>
-                                        <input
-                                            type="submit"
-                                            value="학생 추가하기"
-                                        />
-                                    </form>
-
+                                    }
+                                    
+                                    <br /><br />
                                     <button onClick={() => {
                                         setIsAddingStudent(false);
                                         setInputStudentEmail("");
@@ -403,11 +438,17 @@ function Class({ userObject }) {
                                     <div>
                                         {current.testName}
 
-                                        <Link to={"/class/" + classCode + "/test/" + current.testCode} style={{ textDecoration: 'none' }}>
-                                            <span>
-                                                →
-                                            </span>
+                                        <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: 'none' }}>
+                                            <button>
+                                                관리
+                                            </button>
                                         </Link>
+
+                                        <button onClick={() => {
+                                            deleteTest(current.id);
+                                        }}>
+                                            삭제
+                                        </button>
                                     </div>
                                 ))
                             }
@@ -419,7 +460,7 @@ function Class({ userObject }) {
                             {
                                 myStudents.map((current) => (
                                     <div>
-                                        {current.name} : {current.email}
+                                        {current.authenticate ? current.name : "[인증 요청 중]"}{current.email}
 
                                         <button onClick={() => {
                                             deleteStudent(current.studentId);
@@ -431,41 +472,76 @@ function Class({ userObject }) {
                             }
                         </div>
                     </div>
+
                     :
+
                     <div>
                         {
-                            currentUserData?.userType === "student" && myStudents.map(row => row.email).includes(userObject.email)
+                            studentClassInfo?.email === userObject.email
                                 ?
                                 <div>
-                                    강의 이름 : {classInfo[0]?.className}
-                                    <br />
-
-                                    강사 이름 : {classInfo[0]?.teacherName}
-                                    <br /><br />
-
-                                    <div>
-                                        ---시험 정보---
-                                    </div>
                                     {
-                                        myTests.map((current) => (
+                                        studentClassInfo?.authenticate
+                                            ?
                                             <div>
-                                                {current.testName}
+                                                {
+                                                    currentUserData?.userType === "student" && myStudents.map(row => row.email).includes(userObject.email)
+                                                        ?
+                                                        <div>
+                                                            강의 이름 : {classInfo[0]?.className}
+                                                            <br />
 
-                                                <Link to={"/class/" + classCode + "/test/" + current.testCode} style={{ textDecoration: 'none' }}>
-                                                    <span>
-                                                        →
-                                                    </span>
-                                                </Link>
+                                                            강사 이름 : {classInfo[0]?.teacherName}
+                                                            <br /><br />
+
+                                                            <div>
+                                                                ---시험 정보---
+                                                            </div>
+                                                            {
+                                                                myTests.map((current) => (
+                                                                    <div>
+                                                                        {current.testName}
+
+                                                                        <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: 'none' }}>
+                                                                            <button>
+                                                                                응시
+                                                                            </button>
+                                                                        </Link>
+                                                                    </div>
+                                                                ))
+                                                            }
+                                                            <br />
+                                                        </div>
+                                                        :
+                                                        <div>
+                                                            접근 오류
+                                                        </div>
+                                                }
                                             </div>
-                                        ))
+
+                                            :
+
+                                            <div>
+                                                강사가 당신을 강의에 추가했습니다. 해당 강의를 수강하시겠습니까?
+                                                <br />
+
+                                                <button onClick={acceptAuthenticate}>
+                                                    수락하기
+                                                </button>
+                                            </div>
                                     }
-                                    <br />
                                 </div>
+
                                 :
+
                                 <div>
-                                    접근 오류
+                                    접근 불가
                                 </div>
                         }
+
+
+
+
                     </div>
             }
 

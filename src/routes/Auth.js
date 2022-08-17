@@ -3,7 +3,9 @@ import { useState } from "react";
 
 import { signInWithPopup } from "firebase/auth";
 import { getAuth } from "firebase/auth";
-import { authService } from "../FirebaseModules";
+import { setPersistence } from "firebase/auth";
+import { browserSessionPersistence } from "firebase/auth";
+
 import { GoogleAuthProvider } from "firebase/auth";
 
 import styles from "./Main.module.css"
@@ -15,7 +17,9 @@ function Auth() {
 
     const auth = getAuth();
 
-    async function onSocialClick (event) {
+
+
+    async function onSocialClick(event) {
         const name = event.target.name;
         let provider;
 
@@ -32,7 +36,10 @@ function Auth() {
             //     provider = new TwitterAuthProvider();
             // }
 
-            await signInWithPopup(auth, provider);
+            await setPersistence(auth, browserSessionPersistence)
+                .then(() => {
+                    return signInWithPopup(auth, provider);
+                })
         }
 
         catch (error) {
