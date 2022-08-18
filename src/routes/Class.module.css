@@ -1,0 +1,243 @@
+.classContainer {
+    width: 60vw;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+    display: block;
+    margin: 0px auto;
+    margin-top: 100px;
+}
+
+.className {
+    font-size: 1.2rem;
+    font-weight: 1000;
+}
+
+
+.classCode {
+    font-size: 0.8rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+}
+
+.tabButtonZone {
+    border-bottom: 1px solid rgb(200, 200, 200);
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.tabOn {
+    width: 100px;
+    height: 50px;
+    border: none;
+    background-color: transparent;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    color: rgb(0, 100, 255);
+    border-bottom: 3px solid rgb(0, 100, 255);
+    cursor: pointer;
+}
+
+.tabOff {
+    width: 100px;
+    height: 50px;
+    border: none;
+    background-color: transparent;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+}
+
+.message {
+    font-size: 1rem;
+    font-weight: 1000;
+}
+
+.acceptButton {
+    width: fit-content;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 100, 255);
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.cancelButton {
+    width: fit-content;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(130, 130, 130);
+    cursor: pointer;
+}
+
+.studentElementsZone {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 2fr 8fr 60px;
+}
+
+.studentName {
+    font-size: 1.2rem;
+    font-weight: 1000;
+}
+
+.studentEmail {
+    font-size: 1rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+}
+
+.deleteStudentButton {
+    font-size: 1rem;
+    font-weight: 1000;
+    width: 60px;
+    height: 30px;
+    border: none;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(255, 50, 50);
+    cursor: pointer;
+}
+
+.addStudentButton {
+    width: 100%;
+    height: 40px;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.addStudentButton img {
+    height: 20px;
+    margin-top: 1px;
+    margin-left: 10px;
+}
+
+
+.addStudentBackground {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.addStudentZone {
+    width: 30vw;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    display: block;
+    margin: 0px auto;
+    margin-top: 200px;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+}
+
+.addStudentComment {
+    font-size: 0.8rem;
+}
+
+.addStudentCommentHighlight {
+    font-size: 1rem;
+    color: rgb(0, 100, 255);
+}
+
+.addStudentEmail {
+    font-size: 1rem;
+    font-weight: 1000;
+    margin-bottom: 10px;
+}
+
+.addStudentEmailInput {
+    width: calc(100% - 130px);
+    height: 40px;
+    font-size: 1.3rem;
+    font-weight: 1000;
+    padding: 0px;
+    color: rgb(0, 100, 255);
+    border: transparent;
+    border-bottom: 2px solid rgb(0, 100, 255);
+    margin-right: 10px;
+}
+
+.addStudentEmailInput:focus {
+    outline: none;
+}
+
+.findEmailButton {
+    width: 120px;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(250, 150, 0);
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.findingEmailMessage {
+    font-size: 1rem;
+    font-weight: 1000;
+    color: rgb(255, 50, 50);
+    margin-bottom: 10px;
+}
+
+.addStudentSendButton {
+    width: 100%;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 100, 255);
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.addStudentCancelButton {
+    width: fit-content;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(130, 130, 130);
+    cursor: pointer;
+}

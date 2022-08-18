@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react'
+
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 
 import Navigation from '../routes/Navigation';
@@ -16,41 +16,43 @@ function AppRouter({ isLoggedIn, userObject }) {
         <div>
             <BrowserRouter>
                 {
-                    isLoggedIn && <Navigation />
+                    isLoggedIn && <Navigation userObject={userObject} />
                 }
 
-                <Routes>
-                    {
-                        isLoggedIn
-                            ?
-                            <Route exact path="/" element={<Home userObject={userObject} />} />
-                            :
-                            <Route exact path="/" element={<Auth />} />
-                    }
+                <div>
+                    <Routes>
+                        {
+                            isLoggedIn
+                                ?
+                                <Route path="/" element={<Home userObject={userObject} />} />
+                                :
+                                <Route path="/" element={<Auth />} />
+                        }
 
-                    {
-                        isLoggedIn ?
-                            <Route exact path="/profile" element={<Profile userObject={userObject} />} />
-                            :
-                            <Route exact path="/" element={<Auth />} />
-                    }
+                        {
+                            isLoggedIn ?
+                                <Route path="/profile" element={<Profile userObject={userObject} />} />
+                                :
+                                <Route path="/" element={<Auth />} />
+                        }
 
-                    {
-                        isLoggedIn
-                            ?
-                            <Route exact path="/class/:classCode" element={<Class userObject={userObject} />} />
-                            :
-                            <Route exact path="/" element={<Auth />} />
-                    }
+                        {
+                            isLoggedIn
+                                ?
+                                <Route path="/class/:classCode" element={<Class userObject={userObject} />} />
+                                :
+                                <Route path="/" element={<Auth />} />
+                        }
 
-{
-                        isLoggedIn
-                            ?
-                            <Route exact path="/class/:classCode/test/:testCode" element={<Test userObject={userObject} />} />
-                            :
-                            <Route exact path="/" element={<Auth />} />
-                    }
-                </Routes>
+                        {
+                            isLoggedIn
+                                ?
+                                <Route path="/class/:classCode/test/:testCode" element={<Test userObject={userObject} />} />
+                                :
+                                <Route path="/" element={<Auth />} />
+                        }
+                    </Routes>
+                </div>
             </BrowserRouter>
         </div>
     )

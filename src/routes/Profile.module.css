@@ -1,0 +1,80 @@
+.userInfo {
+    width: 60vw;
+    height: fit-content;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+    display: block;
+    margin: 0px auto;
+    margin-top: 100px;
+}
+
+.profileIcon {
+    height: 120px;
+    display: block;
+    margin: 0px auto;
+}
+
+.userName {
+    font-size: 1.5rem;
+    font-weight: 1000;
+    text-align: center;
+}
+
+.userEmail {
+    font-size: 0.9rem;
+    font-weight: 1000;
+    text-align: center;
+}
+
+.userTypeTeacher {
+    display: block;
+    margin: 0px auto;
+    font-size: 0.8rem;
+    font-weight: 1000;
+    width: fit-content;
+    height: 25px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background-color: rgb(50, 200, 255);
+    color: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.userTypeStudent {
+    display: block;
+    margin: 0px auto;
+    font-size: 0.8rem;
+    font-weight: 1000;
+    width: fit-content;
+    height: 25px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background-color: rgb(0, 200, 0);
+    color: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.logOutButton {
+    display: block;
+    margin: 0px auto;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    width: 200px;
+    height: 40px;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(255, 50, 50);
+    cursor: pointer;
+}

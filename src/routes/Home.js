@@ -1,7 +1,6 @@
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
@@ -9,19 +8,15 @@ import { collection, documentId } from "firebase/firestore";
 import { doc } from "firebase/firestore";
 import { addDoc } from "firebase/firestore";
 import { setDoc } from "firebase/firestore";
-import { getDoc } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { query } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
 import { where } from "firebase/firestore";
 
-import styles from "./Main.module.css"
+import styles from "./Home.module.css"
 
 
 
 function Home({ userObject }) {
-    const navigate = useNavigate();
-
     const [isCreatingClass, setIsCreatingClass] = useState(false);
 
     const [inputClassName, setInputClassName] = useState("");
@@ -50,6 +45,9 @@ function Home({ userObject }) {
         }
     }
 
+
+
+    // [강사] 강의 생성하기
     async function createClass(event) {
         event.preventDefault();
 
@@ -60,17 +58,19 @@ function Home({ userObject }) {
                 establishedTime: Date.now(),
                 teacherId: userObject.uid,
             });
-    
+
             setIsCreatingClass(false);
             setInputClassName("");
         }
-        
-        catch(error) {
+
+        catch (error) {
             console.log(error);
         }
     };
 
-    // 내가 개설한 강의 불러오기
+
+
+    // [강사] 개설한 강의 불러오기
     useEffect(() => {
         const myQuery = query(
             collection(dbService, "classes"),
@@ -90,10 +90,10 @@ function Home({ userObject }) {
             setTeachersClasses(tempArray);
         });
     }, [])
-    
 
 
-    // [학생] 내가 수강하는 강의불러오기
+
+    // [학생] 수강 중인 강의 불러오기
     useEffect(() => {
         const myQuery = query(
             collection(dbService, "users/" + userObject.uid + "/classes")
@@ -103,6 +103,8 @@ function Home({ userObject }) {
             const tempArray = snapshot.docs.map((current) => ({
                 className: current.className,
                 classCode: current.id,
+                teacherName: current.teacherName,
+                authenticate: current.authenticate,
 
                 ...current.data()
             }));
@@ -124,6 +126,7 @@ function Home({ userObject }) {
             const tempArray = snapshot.docs.map((current) => ({
                 name: current.name,
                 userType: current.userType,
+                profileIcon: current.profileIcon,
 
                 ...current.data()
             }));
@@ -134,6 +137,7 @@ function Home({ userObject }) {
 
 
 
+    // 사용자 정보가 DB에 있는 경우 추가하기
     async function addUserToDatabase(event) {
         event.preventDefault();
 
@@ -142,6 +146,7 @@ function Home({ userObject }) {
             name: inputName,
             email: userObject.email,
             userType: inputUserType,
+            profileIcon: 1,
         });
 
         setInputName("");
@@ -152,137 +157,214 @@ function Home({ userObject }) {
 
     return (
         <div>
-            {userObject.email}
-            <br />
-            {currentUserData?.userType}
-            <br />
-            {currentUserData?.name}
-            <br /><br />
-
             {
                 currentUserData?.userType
+
                     ?
+
+                    // 사용자 정보가 DB에 있는 경우
                     <div>
+                        <div className={styles.userInfo}>
+                            <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + currentUserData.profileIcon + ".png"} />
+
+                            {/* 사용자 정보 표시 */}
+                            <div>
+                                <div className={styles.userName}>
+                                    {currentUserData?.name}
+                                </div>
+
+                                <div className={styles.userEmail}>
+                                    {userObject.email}
+                                </div>
+
+                                <div className={currentUserData?.userType === "teacher" ? styles.userTypeTeacher : styles.userTypeStudent}>
+                                    {currentUserData?.userType}
+                                </div>
+                            </div>
+                        </div>
+
                         {
                             currentUserData?.userType === "teacher"
+
                                 ?
-                                <div>
+
+                                // 강사 전용 화면
+                                <div className={styles.classListZone}>
+                                    <div className={styles.classListTitle}>
+                                        강의 목록
+                                    </div>
+                                    {
+                                        teachersClasses.map((current) => (
+                                            <Link to={"/class/" + current.classCode} style={{ textDecoration: "none" }}>
+                                                <div className={styles.classListElements}>
+                                                    <div>
+                                                        <div className={styles.className}>
+                                                            {current.className}
+                                                        </div>
+
+                                                        <div className={styles.classCode}>
+                                                            {current.classCode}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={styles.goToClassButton}>
+                                                    강의실 가기
+                                                        <img alt="home" src={process.env.PUBLIC_URL + "/icon/goToClass.png"} />
+                                                    </div>
+
+                                                </div>
+                                            </Link>
+                                        ))
+                                    }
+
                                     <button
+                                        className={styles.createClassButton}
                                         onClick={() => {
-                                            setIsCreatingClass(!isCreatingClass);
+                                            setIsCreatingClass(true);
                                             setInputClassName("");
                                         }}
                                     >
-                                        {
-                                            isCreatingClass
-                                                ?
-                                                "강의 만들기 취소"
-                                                :
-                                                "강의 만들기"
-                                        }
+                                        강의 만들기
+                                        <img alt="home" src={process.env.PUBLIC_URL + "/icon/add.png"} />
                                     </button>
 
                                     {
                                         isCreatingClass
+
                                         &&
-                                        <form onSubmit={createClass}>
-                                            강의 이름
-                                            <input
-                                                type="text"
-                                                name="className"
-                                                value={inputClassName}
-                                                onChange={onChange}
-                                                maxLength={30}
-                                                required
-                                            />
-                                            <br />
 
-                                            강사 이름
-                                            &nbsp;
-                                            {currentUserData.name}
-                                            <br />
+                                        <form onSubmit={createClass} className={styles.createClassBackground}>
+                                            <div className={styles.createClassZone}>
+                                                <div className={styles.createClassName}>
+                                                    강의 이름
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name="className"
+                                                    value={inputClassName}
+                                                    onChange={onChange}
+                                                    maxLength={30}
+                                                    required
+                                                    className={styles.createClassNameInput}
+                                                />
+                                                <br /><br />
 
-                                            <input type="submit" value="강의 만들기" />
-                                            <br /><br />
+                                                <input
+                                                    type="submit"
+                                                    value="생성"
+                                                    className={styles.createClassFinishButton}
+                                                />
+
+                                                <button
+                                                    onClick={() => {
+                                                        setIsCreatingClass(false);
+                                                        setInputClassName("");
+                                                    }}
+                                                    className={styles.createClassCancelButton}
+                                                >
+                                                    취소
+                                                </button>
+                                            </div>
                                         </form>
                                     }
-
-                                    <br /><br />
-                                    <div>
-                                        ---강의목록---
-                                        {
-                                            teachersClasses.map((current) => (
-                                                <div>
-                                                    {current.className}
-                                                    {current.classCode}
-
-                                                    <Link to={"/class/" + current.classCode} style={{ textDecoration: 'none' }}>
-                                                        <span>
-                                                            강의실 가기
-                                                        </span>
-                                                    </Link>
-                                                </div>
-                                            ))
-                                        }
-                                    </div>
                                 </div>
-                                :
-                                <div>
-                                    ---강의목록---
-                                    {
-                                        studentsClasses.map((current) => (
-                                            <div>
-                                                {current.className}
 
-                                                <Link to={"/class/" + current.classCode} style={{ textDecoration: 'none' }}>
-                                                    <span>
-                                                        강의실 가기
-                                                    </span>
-                                                </Link>
+                                :
+
+                                // 학생 전용 화면
+                                <div className={styles.classListZone}>
+                                    <div className={styles.classListTitle}>
+                                        강의 목록
+                                    </div>
+
+
+                                    {
+                                        studentsClasses.length > 0 
+                                            ?
+                                            <div>
+                                                {
+                                                    studentsClasses.map((current) => (
+                                                        <Link to={"/class/" + current.classCode} style={{ textDecoration: "none" }}>
+                                                            <div className={styles.classListElements}>
+                                                                <div>
+                                                                    <div className={styles.className}>
+                                                                        {current.className}
+                                                                        <span className={styles.classWarning}>
+                                                                            {!current.authenticate && "인증 필요"}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className={styles.classCode}>
+                                                                        {current.teacherName}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className={styles.goToClassButton}>
+                                                                    강의실 가기
+                                                                    <img alt="home" src={process.env.PUBLIC_URL + "/icon/goToClass.png"} />
+                                                                </div>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                                }
                                             </div>
-                                        ))
+                                            :
+                                            <div className={styles.nothing}>
+                                                현재 수강중인 강의가 없습니다.
+                                            </div>
                                     }
+                                    
                                 </div>
                         }
                     </div>
+
                     :
-                    <form onSubmit={addUserToDatabase}>
-                        이름
-                        <input
-                            type="text"
-                            name="name"
-                            value={inputName}
-                            onChange={onChange}
-                            maxLength={30}
-                            required
-                        />
-                        <br />
 
-                        유형
-                        <label>
+                    // 사용자 정보가 DB에 없는 경우
+                    <form onSubmit={addUserToDatabase} className={styles.createClassBackground}>
+                        <div className={styles.createClassZone}>
+                            <div className={styles.createClassName}>
+                                사용자 이름
+                            </div>
                             <input
-                                type="radio"
-                                name="userType"
-                                value="student"
-                                checked={inputUserType === "student"}
+                                type="text"
+                                name="name"
+                                value={inputName}
                                 onChange={onChange}
+                                maxLength={30}
+                                required
+                                className={styles.createClassNameInput}
                             />
-                            학생
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="userType"
-                                value="teacher"
-                                checked={inputUserType === "teacher"}
-                                onChange={onChange}
-                            />
-                            강사
-                        </label>
-                        <br /><br />
+                            <br /><br />
 
-                        <input type="submit" value="정보 입력" />
-                        <br /><br />
+                            <div className={styles.createClassName}>
+                                사용자 유형
+                            </div>
+
+                            <div className={styles.userTypeButtonZone}>
+                                <input
+                                    type="button"
+                                    onClick={() => { setInputUserType("student") }}
+                                    className={inputUserType === "student" ? styles.userTypeOn : styles.userTypeOff}
+                                    value="학생"
+                                />
+
+                                <input
+                                    type="button"
+                                    onClick={() => { setInputUserType("teacher") }}
+                                    className={inputUserType === "teacher" ? styles.userTypeOn : styles.userTypeOff}
+                                    value="강사"
+                                />
+
+                            </div>
+                            <br />
+
+                            <input
+                                type="submit"
+                                value="정보 입력" 
+                                className={styles.createClassFinishButton}
+                            />
+                        </div>
                     </form>
             }
         </div>

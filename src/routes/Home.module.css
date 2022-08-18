@@ -1,0 +1,269 @@
+.userInfo {
+    width: 60vw;
+    height: 140px;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+    display: block;
+    margin: 0px auto;
+    margin-top: 100px;
+    display: grid;
+    grid-template-columns: 140px calc(60vw - 120px);
+}
+
+.profileIcon {
+    height: 100px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.userName {
+    font-size: 1.5rem;
+    font-weight: 1000;
+}
+
+.userEmail {
+    font-size: 0.9rem;
+    font-weight: 1000;
+}
+
+.userTypeTeacher {
+    font-size: 0.8rem;
+    font-weight: 1000;
+    width: fit-content;
+    height: 25px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background-color: rgb(50, 200, 255);
+    color: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.userTypeStudent {
+    font-size: 0.8rem;
+    font-weight: 1000;
+    width: fit-content;
+    height: 25px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background-color: rgb(0, 200, 0);
+    color: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.classListZone {
+    width: 60vw;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+    display: block;
+    margin: 0px auto;
+    margin-top: 30px;
+}
+
+.classListTitle {
+    font-size: 1.5rem;
+    font-weight: 1000;
+    color: rgb(0, 100, 255);
+    border-radius: 10px 10px 0px 0px;
+    border-bottom: 1px solid rgb(200, 200, 200);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.classListElements {
+    display: grid;
+    grid-template-columns: 1fr 130px;
+    height: 60px;
+    align-items: center;
+}
+
+.className {
+    font-size: 1.2rem;
+    font-weight: 1000;
+    color: black;
+}
+
+.className:hover {
+    color: rgb(0, 100, 255);
+}
+
+.classWarning {
+    font-size: 0.8rem;
+    width: fit-content;
+    margin-left: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background-color: rgb(255, 50, 50);
+    color: rgb(255, 255, 255);
+}
+
+.classCode {
+    font-size: 0.8rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+}
+
+.goToClassButton {
+    width: 130px;
+    height: 30px;
+    font-size: 1rem;
+    font-weight: 1000;
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 100, 255);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.goToClassButton img {
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    filter: invert();
+}
+
+.createClassButton {
+    width: 100%;
+    height: 40px;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.createClassButton img {
+    height: 20px;
+    margin-top: 1px;
+    margin-left: 10px;
+}
+
+.createClassBackground {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.createClassZone {
+    width: 30vw;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    display: block;
+    margin: 0px auto;
+    margin-top: 200px;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+}
+
+.createClassName {
+    font-size: 1rem;
+    font-weight: 1000;
+    margin-bottom: 10px;
+}
+
+.createClassNameInput {
+    width: 100%;
+    height: 40px;
+    font-size: 1.3rem;
+    font-weight: 1000;
+    padding: 0px;
+    color: rgb(0, 100, 255);
+    border: transparent;
+    border-bottom: 2px solid rgb(0, 100, 255);
+}
+
+.createClassNameInput:focus {
+    outline: none;
+}
+
+.createClassFinishButton {
+    width: fit-content;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 100, 255);
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.createClassCancelButton {
+    width: fit-content;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+    font-weight: 1000;
+    border: transparent;
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(130, 130, 130);
+    cursor: pointer;
+}
+
+.userTypeButtonZone {
+    border-bottom: 1px solid rgb(200, 200, 200);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.userTypeOn {
+    width: 50%;
+    height: 40px;
+    border: none;
+    background-color: transparent;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    color: rgb(0, 100, 255);
+    border-bottom: 3px solid rgb(0, 100, 255);
+}
+
+.userTypeOff {
+    width: 50%;
+    height: 40px;
+    border: none;
+    background-color: transparent;
+    font-size: 1.2rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+    border-bottom: 3px solid transparent;
+}
+
+.nothing {
+    font-size: 1rem;
+    color: rgb(150, 150, 150);
+    text-align: center;
+    padding-top: 50px;
+    padding-bottom: 40px;
+}
