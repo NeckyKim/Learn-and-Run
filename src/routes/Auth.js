@@ -8,7 +8,7 @@ import { browserSessionPersistence } from "firebase/auth";
 
 import { GoogleAuthProvider } from "firebase/auth";
 
-import styles from "./Main.module.css"
+import styles from "./Auth.module.css"
 
 
 

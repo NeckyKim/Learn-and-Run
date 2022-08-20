@@ -43,10 +43,6 @@
     color: rgb(0, 100, 200);
 }
 
-.inputZone:focus {
-    outline: none;
-}
-
 .inputZone::placeholder {
     font-size: 1.2rem;
     color: rgb(180, 180, 180);

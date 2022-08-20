@@ -234,7 +234,7 @@ function Home({ userObject }) {
                                         &&
 
                                         <form onSubmit={createClass} className={styles.createClassBackground}>
-                                            <div className={styles.createClassZone}>
+                                            <div className={styles.createClassContainer}>
                                                 <div className={styles.createClassName}>
                                                     강의 이름
                                                 </div>
@@ -289,9 +289,16 @@ function Home({ userObject }) {
                                                                 <div>
                                                                     <div className={styles.className}>
                                                                         {current.className}
-                                                                        <span className={styles.classWarning}>
-                                                                            {!current.authenticate && "인증 필요"}
-                                                                        </span>
+                                                                        {
+                                                                            !current.authenticate
+                                                                            
+                                                                            &&
+
+                                                                            <span className={styles.classWarning}>
+                                                                                인증 필요
+                                                                            </span>
+                                                                        }
+  
                                                                     </div>
 
                                                                     <div className={styles.classCode}>
@@ -313,7 +320,6 @@ function Home({ userObject }) {
                                                 현재 수강중인 강의가 없습니다.
                                             </div>
                                     }
-                                    
                                 </div>
                         }
                     </div>
@@ -321,7 +327,7 @@ function Home({ userObject }) {
                     :
 
                     // 사용자 정보가 DB에 없는 경우
-                    <form onSubmit={addUserToDatabase} className={styles.createClassBackground}>
+                    <form onSubmit={addUserToDatabase} className={styles.createClassContainer}>
                         <div className={styles.createClassZone}>
                             <div className={styles.createClassName}>
                                 사용자 이름
@@ -355,7 +361,6 @@ function Home({ userObject }) {
                                     className={inputUserType === "teacher" ? styles.userTypeOn : styles.userTypeOff}
                                     value="강사"
                                 />
-
                             </div>
                             <br />
 

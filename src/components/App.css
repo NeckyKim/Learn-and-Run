@@ -47,3 +47,11 @@
     font-family: 'Noto Sans KR';
     transition: 0.3s;
 }
+
+input:focus {
+    outline: none;
+}
+
+textarea:focus {
+    outline: none;
+}

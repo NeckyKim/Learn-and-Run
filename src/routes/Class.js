@@ -37,9 +37,12 @@ function Class({ userObject }) {
     const [inputTestName, setInputTestName] = useState("");
     const [inputTestDate, setInputTestDate] = useState("");
     const [inputTestTime, setInputTestTime] = useState("");
+    const [inputAutoGrading, setInputAutoGrading] = useState(false);
+    const [inputFeedback, setInputFeedback] = useState(false);
 
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [inputStudentEmail, setInputStudentEmail] = useState("");
+    const [authenticateButton, setAuthenticateButton] = useState(false);
 
 
 
@@ -148,6 +151,7 @@ function Class({ userObject }) {
     }, [])
 
 
+
     // 학생이 자신의 강의 정보 불러오기
     useEffect(() => {
         const myQuery = query(
@@ -165,7 +169,6 @@ function Class({ userObject }) {
             setStudentsClassInfo(tempArray[0]);
         });
     }, [])
-
 
 
 
@@ -191,20 +194,15 @@ function Class({ userObject }) {
 
 
 
-    function timeConverter(date) {
-        var datum = Date.parse(date);
-        return datum / 1000;
-    }
-
-
     async function createTest(event) {
         event.preventDefault();
 
         await addDoc(collection(dbService, "classes/" + classCode + "/tests"), {
             testName: inputTestName,
-            testDate: timeConverter(inputTestDate),
+            testDate: Date.parse(inputTestDate),
             testTime: inputTestTime,
-            testStatus: "before",
+            testAutoGrading: inputAutoGrading,
+            testFeedback: inputFeedback,
         });
 
         setIsCreatingTest(false);
@@ -243,16 +241,28 @@ function Class({ userObject }) {
 
             setFindingEmailResults(tempArray);
 
-            if(tempArray.length > 0) {
-                setFindingEmailMessage("이메일이 확인되었습니다.");
-            }
+            if (inputStudentEmail !== "") {
+                if (tempArray.length > 0) {
+                    if (!(myStudents.map(row => row.email).includes("neckykim@gmail.com"))) {
+                        setFindingEmailMessage("이메일이 확인되었습니다.");
+                        setAuthenticateButton(true);
+                    }
 
-            else if (inputStudentEmail === "") {
-                setFindingEmailMessage("이메일을 입력하세요.")
+                    else {
+                        setFindingEmailMessage("이미 추가된 학생입니다.");
+                        setAuthenticateButton(false);
+                    }
+                }
+
+                else {
+                    setFindingEmailMessage("존재하지 않는 이메일입니다.");
+                    setAuthenticateButton(false);
+                }
             }
 
             else {
-                setFindingEmailMessage("이메일이 존재하지 않습니다.")
+                setFindingEmailMessage("이메일을 입력하세요.");
+                setAuthenticateButton(false);
             }
         });
     }
@@ -280,6 +290,7 @@ function Class({ userObject }) {
             setIsAddingStudent(false);
             setInputStudentEmail("");
             setFindingEmailResults([]);
+            setAuthenticateButton(false);
 
             alert("학생에게 인증을 요청했습니다.")
         }
@@ -350,203 +361,270 @@ function Class({ userObject }) {
                         {
                             tab === 1
 
-                                ?
+                            &&
 
-                                // 학생 관리 화면
-                                <div>
-                                    {
-                                        myStudents.map((current) => (
-                                            <div className={styles.studentElementsZone}>
-                                                <div className={styles.studentName}>
-                                                    {current.authenticate ? current.name : "[인증 요청 중]"}
-                                                </div>
-
-                                                <div className={styles.studentEmail}>
-                                                    {current.email}
-                                                </div>
-
-                                                <button
-                                                    className={styles.deleteStudentButton}
-                                                    onClick={() => {
-                                                        deleteStudent(current.studentId);
-                                                    }}>
-                                                    삭제
-                                                </button>
+                            // 학생 관리 화면
+                            <div>
+                                {
+                                    myStudents.map((current) => (
+                                        <div className={styles.studentElementsZone}>
+                                            <div className={styles.studentName}>
+                                                {current.authenticate ? current.name : "[인증 요청 중]"}
                                             </div>
-                                        ))
-                                    }
 
-                                    <button
-                                        className={styles.addStudentButton}
-                                        onClick={() => {
-                                            setIsCreatingTest(false);
-                                            setIsAddingStudent(true);
-                                        }}>
-                                        학생 추가하기
-                                        <img alt="home" src={process.env.PUBLIC_URL + "/icon/add.png"} />
-                                    </button>
-
-
-                                    {/* 학생 추가 화면 */}
-                                    {
-                                        isAddingStudent
-
-                                        &&
-
-                                        <div className={styles.addStudentBackground}>
-                                            <div className={styles.addStudentZone}>
-                                                <div className={styles.addStudentComment}>
-                                                    강의에 추가할 학생의 이메일을 입력하고, <span className={styles.addStudentCommentHighlight}>이메일 찾기</span> 버튼을 누르세요.<br />
-
-                                                    이메일이 존재하는 경우, <span className={styles.addStudentCommentHighlight}>학생 인증 요청</span> 버튼을 눌러서 학생에게 인증을 요청합니다.<br />
-
-                                                    학생이 요청을 <span className={styles.addStudentCommentHighlight}>수락</span>하면 강의에 추가됩니다.
-                                                </div>
-                                                <br />
-
-                                                <div className={styles.addStudentEmail}>
-                                                    학생 이메일
-                                                </div>
-                                                <input
-                                                    type="email"
-                                                    name="studentEmail"
-                                                    value={inputStudentEmail}
-                                                    onChange={onChange}
-                                                    maxLength={30}
-                                                    required
-                                                    className={styles.addStudentEmailInput}
-                                                />
-
-                                                <button
-                                                    className={styles.findEmailButton}
-                                                    onClick={() => {
-                                                        findStudentByEmail(inputStudentEmail);
-                                                    }}>
-                                                    이메일 찾기
-                                                </button>
-
-                                                <div className={styles.findingEmailMessage}>
-                                                    {findingEmailMessage}
-                                                </div>
-
-                                                {
-                                                    findingEmailResults[0]?.userId
-                                                    &&
-                                                    findingEmailResults[0]?.userType === "student"
-                                                    &&
-                                                    <button 
-                                                        className={styles.addStudentSendButton}
-                                                        onClick={addStudent}>
-                                                        학생 인증 요청
-                                                    </button>
-                                                }
-
-                                                <br /><br />
-                                                <button
-                                                    className={styles.addStudentCancelButton}
-                                                    onClick={() => {
-                                                        setIsAddingStudent(false);
-                                                        setInputStudentEmail("");
-                                                        setFindingEmailResults([]);
-                                                        setFindingEmailMessage("");
-                                                    }}>
-                                                    취소
-                                                </button>
+                                            <div className={styles.studentEmail}>
+                                                {current.email}
                                             </div>
+
+                                            <button
+                                                className={styles.deleteStudentButton}
+                                                onClick={() => {
+                                                    deleteStudent(current.studentId);
+                                                }}>
+                                                삭제
+                                            </button>
                                         </div>
-                                    }
-                                </div>
+                                    ))
+                                }
 
-                                :
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => {
+                                        setIsCreatingTest(false);
+                                        setIsAddingStudent(true);
+                                    }}>
+                                    학생 추가하기
+                                    <img alt="home" src={process.env.PUBLIC_URL + "/icon/add.png"} />
+                                </button>
 
-                                // 시험 관리 화면
-                                <div>
-                                    {
-                                        myTests.map((current) => (
-                                            <div>
+
+                                {/* 학생 추가 화면 */}
+                                {
+                                    isAddingStudent
+
+                                    &&
+
+                                    <div className={styles.addBackground}>
+                                        <div className={styles.addContainer}>
+                                            <div className={styles.addStudentComment}>
+                                                강의에 추가할 학생의 이메일을 입력하고, <span className={styles.addStudentCommentHighlight}>이메일 찾기</span> 버튼을 누르세요.<br />
+
+                                                이메일이 존재하는 경우, <span className={styles.addStudentCommentHighlight}>학생 인증 요청</span> 버튼을 눌러서 학생에게 인증을 요청합니다.<br />
+
+                                                학생이 요청을 <span className={styles.addStudentCommentHighlight}>수락</span>하면 강의에 추가됩니다.
+                                            </div>
+                                            <br />
+
+                                            <div className={styles.addType}>
+                                                학생 이메일
+                                            </div>
+                                            <input
+                                                type="email"
+                                                name="studentEmail"
+                                                value={inputStudentEmail}
+                                                onChange={onChange}
+                                                maxLength={30}
+                                                required
+                                                className={styles.addEmailInput}
+                                            />
+
+                                            <button
+                                                className={styles.findEmailButton}
+                                                onClick={() => {
+                                                    findStudentByEmail(inputStudentEmail);
+                                                }}>
+                                                이메일 찾기
+                                            </button>
+
+                                            <div className={styles.findingEmailMessage}>
+                                                {findingEmailMessage}
+                                            </div>
+
+                                            {
+                                                authenticateButton
+
+                                                &&
+
+                                                <button
+                                                    className={styles.addStudentSendButton}
+                                                    onClick={addStudent}>
+                                                    학생 인증 요청
+                                                </button>
+                                            }
+
+                                            <br /><br />
+                                            <button
+                                                className={styles.cancelButton}
+                                                onClick={() => {
+                                                    setIsAddingStudent(false);
+                                                    setInputStudentEmail("");
+                                                    setFindingEmailResults([]);
+                                                    setFindingEmailMessage("");
+                                                    setAuthenticateButton(false);
+                                                }}>
+                                                취소
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        {
+                            tab === 2
+
+                            &&
+
+                            // 시험 관리 화면
+                            <div>
+                                {
+                                    myTests.map((current) => (
+                                        <div className={styles.testElementsZone}>
+                                            <div className={styles.testName}>
                                                 {current.testName}
+                                            </div>
 
+                                            <div>
                                                 <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: 'none' }}>
-                                                    <button>
+                                                    <button className={styles.testSettingButton}>
                                                         관리
                                                     </button>
                                                 </Link>
+                                            </div>
 
-                                                <button onClick={() => {
+                                            <button
+                                                className={styles.testDeleteButton}
+                                                onClick={() => {
                                                     deleteTest(current.id);
                                                 }}>
-                                                    삭제
-                                                </button>
-                                            </div>
-                                        ))
-                                    }
+                                                삭제
+                                            </button>
+                                        </div>
+                                    ))
+                                }
 
-                                    {/* 시험 추가 화면 */}
-                                    {
-                                        !isCreatingTest
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => {
+                                        setIsCreatingTest(true);
+                                        setIsAddingStudent(false);
+                                    }}>
+                                    시험 추가하기
+                                    <img alt="home" src={process.env.PUBLIC_URL + "/icon/add.png"} />
+                                </button>
 
-                                            ?
 
-                                            <div>
-                                                <button onClick={() => {
-                                                    setIsCreatingTest(true);
-                                                    setIsAddingStudent(false);
-                                                }}>
-                                                    시험 만들기
-                                                </button>
-                                            </div>
 
-                                            :
+                                {/* 시험 추가 화면 */}
+                                {
+                                    isCreatingTest
 
-                                            <div>
-                                                <form onSubmit={createTest}>
-                                                    시험 이름
-                                                    <input
-                                                        type="text"
-                                                        name="testName"
-                                                        value={inputTestName}
-                                                        onChange={onChange}
-                                                        maxLength={30}
-                                                        required
+                                    &&
+
+                                    <div className={styles.addBackground}>
+                                        <div className={styles.addContainer}>
+                                            <form onSubmit={createTest}>
+                                                <div className={styles.addType}>
+                                                    이름
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name="testName"
+                                                    value={inputTestName}
+                                                    onChange={onChange}
+                                                    maxLength={30}
+                                                    required
+                                                    className={styles.addInput}
+                                                />
+                                                <br /><br />
+
+                                                <div className={styles.addType}>
+                                                    시작 시각
+                                                </div>
+                                                <input
+                                                    type="datetime-local"
+                                                    name="testDate"
+                                                    value={inputTestDate}
+                                                    onChange={onChange}
+                                                    required
+                                                    className={styles.addInput}
+                                                />
+                                                <br /><br />
+
+                                                <div className={styles.addType}>
+                                                    진행 시간
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    name="testTime"
+                                                    value={inputTestTime}
+                                                    onChange={onChange}
+                                                    required
+                                                    className={styles.addTimeInput}
+                                                />분
+                                                <br /><br />
+
+                                                <div className={styles.addType}>
+                                                    채점 방식
+                                                </div>
+                                                <input
+                                                        type="button"
+                                                        value="직접 채점"
+                                                        className={inputAutoGrading === false ? styles.buttonOn1 : styles.buttonOff1}
+                                                        onClick={() => {
+                                                            setInputAutoGrading(false);
+                                                        }}
                                                     />
-                                                    <br />
-
-                                                    응시 가능 날짜
-                                                    <input
-                                                        type="datetime-local"
-                                                        name="testDate"
-                                                        value={inputTestDate}
-                                                        onChange={onChange}
-                                                        required
+                                                <input
+                                                        type="button"
+                                                        value="종료 후 자동 채점"
+                                                        className={inputAutoGrading === true ? styles.buttonOn3 : styles.buttonOff3}
+                                                        onClick={() => {
+                                                            setInputAutoGrading(true);
+                                                        }}
                                                     />
-                                                    <br />
+                                                <br /><br />
 
-                                                    응시 시간
-                                                    <input
-                                                        type="number"
-                                                        name="testTime"
-                                                        value={inputTestTime}
-                                                        onChange={onChange}
-                                                        required
-                                                    />분
-                                                    <br />
-
-                                                    <input
-                                                        type="submit"
-                                                        value="시험 만들기"
+                                                <div className={styles.addType}>
+                                                    시험지 및 점수 공개
+                                                </div>
+                                                <input
+                                                        type="button"
+                                                        value="공개 안 함"
+                                                        className={inputFeedback === false ? styles.buttonOn1 : styles.buttonOff1}
+                                                        onClick={() => {
+                                                            setInputFeedback(false);
+                                                        }}
                                                     />
-                                                    <br />
-                                                </form>
+                                                <input
+                                                        type="button"
+                                                        value="공개 함"
+                                                        className={inputFeedback === true ? styles.buttonOn3 : styles.buttonOff3}
+                                                        onClick={() => {
+                                                            setInputFeedback(true);
+                                                        }}
+                                                    />
+                                                <br /><br /><br />
 
-                                                <button onClick={() => {
-                                                    setIsCreatingTest(false);
-                                                    setInputTestName("");
-                                                }}>
-                                                    시험 만들기 취소
+                                                <input
+                                                    className={styles.acceptButton}
+                                                    type="submit"
+                                                    value="만들기"
+                                                />
+
+                                                <button
+                                                    className={styles.cancelButton}
+                                                    onClick={() => {
+                                                        setIsCreatingTest(false);
+                                                        setInputTestName("");
+                                                    }}>
+                                                    취소
                                                 </button>
-                                            </div>
-                                    }
-                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
                         }
                     </div>
 
@@ -564,7 +642,7 @@ function Class({ userObject }) {
                                         studentClassInfo?.authenticate
 
                                             ?
-                                        
+
                                             // 학생 인증이 된 경우
                                             <div>
                                                 {
@@ -579,23 +657,34 @@ function Class({ userObject }) {
                                                                 {classInfo[0]?.teacherName}
                                                             </div>
 
-                                                            <div>
-                                                                ---시험 정보---
+                                                            {/* 메뉴 탭 */}
+                                                            <div className={styles.tabButtonZone}>
+                                                                <button
+                                                                    className={tab === 1 ? styles.tabOn : styles.tabOff}
+                                                                    onClick={() => { setTab(1) }}>
+                                                                    시험
+                                                                </button>
                                                             </div>
+
+
                                                             {
                                                                 myTests.map((current) => (
-                                                                    <div>
-                                                                        {current.testName}
+                                                                    <div className={styles.testElementsZone}>
+                                                                        <div className={styles.testName}>
+                                                                            {current.testName}
+                                                                        </div>
+
+                                                                        <div>
+                                                                        </div>
 
                                                                         <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: 'none' }}>
-                                                                            <button>
+                                                                            <button className={styles.testSettingButton}>
                                                                                 응시
                                                                             </button>
                                                                         </Link>
                                                                     </div>
                                                                 ))
                                                             }
-                                                            <br />
                                                         </div>
 
                                                         :
