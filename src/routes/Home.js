@@ -17,12 +17,24 @@ import styles from "./Home.module.css"
 
 
 function Home({ userObject }) {
+    // 사용자 정보 불러오기
+    
+    const [userData, setUserData] = useState([]);
+    useEffect(() => {
+        const myQuery = query(collection(dbService, "users"),where(documentId(), "==", userObject.uid));
+
+        onSnapshot(query(collection(dbService, "users"),where(documentId(), "==", userObject.uid)), (snapshot) => {
+            setUserData(snapshot.docs.map((current) => ({...current.data()}))[0]);
+        });
+    }, [])
+
+
+
     const [isCreatingClass, setIsCreatingClass] = useState(false);
 
     const [inputClassName, setInputClassName] = useState("");
     const [teachersClasses, setTeachersClasses] = useState([]);
     const [studentsClasses, setStudentsClasses] = useState([]);
-    const [currentUserData, setCurrentUserData] = useState([]);
 
     const [inputUserType, setInputUserType] = useState("student");
     const [inputName, setInputName] = useState("");
@@ -54,7 +66,7 @@ function Home({ userObject }) {
         try {
             await addDoc(collection(dbService, "classes"), {
                 className: inputClassName,
-                teacherName: currentUserData.name,
+                teacherName: userData.name,
                 establishedTime: Date.now(),
                 teacherId: userObject.uid,
             });
@@ -115,28 +127,6 @@ function Home({ userObject }) {
 
 
 
-    // 사용자 정보 불러오기
-    useEffect(() => {
-        const myQuery = query(
-            collection(dbService, "users"),
-            where(documentId(), "==", userObject.uid),
-        );
-
-        onSnapshot(myQuery, (snapshot) => {
-            const tempArray = snapshot.docs.map((current) => ({
-                name: current.name,
-                userType: current.userType,
-                profileIcon: current.profileIcon,
-
-                ...current.data()
-            }));
-
-            setCurrentUserData(tempArray[0]);
-        });
-    }, [])
-
-
-
     // 사용자 정보가 DB에 있는 경우 추가하기
     async function addUserToDatabase(event) {
         event.preventDefault();
@@ -158,33 +148,33 @@ function Home({ userObject }) {
     return (
         <div>
             {
-                currentUserData?.userType
+                userData?.userType
 
                     ?
 
                     // 사용자 정보가 DB에 있는 경우
                     <div>
                         <div className={styles.userInfo}>
-                            <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + currentUserData.profileIcon + ".png"} />
+                            <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + userData.profileIcon + ".png"} />
 
                             {/* 사용자 정보 표시 */}
                             <div>
                                 <div className={styles.userName}>
-                                    {currentUserData?.name}
+                                    {userData?.name}
                                 </div>
 
                                 <div className={styles.userEmail}>
-                                    {userObject.email}
+                                    {userData.email}
                                 </div>
 
-                                <div className={currentUserData?.userType === "teacher" ? styles.userTypeTeacher : styles.userTypeStudent}>
-                                    {currentUserData?.userType}
+                                <div className={userData?.userType === "teacher" ? styles.userTypeTeacher : styles.userTypeStudent}>
+                                    {userData?.userType}
                                 </div>
                             </div>
                         </div>
 
                         {
-                            currentUserData?.userType === "teacher"
+                            userData?.userType === "teacher"
 
                                 ?
 

@@ -8,7 +8,7 @@ import styles from "./Question.module.css"
 
 
 
-function Question({ number, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange }) {
+function Question({ number, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange, deleteButton }) {
     const [isEditingQuestion, setIsEditingQuestion] = useState(false);
     const [newPoints, setNewPoints] = useState(points);
     const [newQuestion, setNewQuestion] = useState(question);
@@ -140,11 +140,17 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                 수정
                             </button> */}
 
-                            <button
-                                className={styles.deleteButton}
-                                onClick={deleteQuestion}>
-                                삭제
-                            </button>
+                            {
+                                deleteButton
+
+                                &&
+
+                                <button
+                                    className={styles.deleteButton}
+                                    onClick={deleteQuestion}>
+                                    삭제
+                                </button>
+                            }
                         </div>
 
                         :

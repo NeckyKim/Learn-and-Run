@@ -20,6 +20,19 @@ import styles from "./Class.module.css";
 
 
 function Class({ userObject }) {
+    // 사용자 정보 불러오기
+    const [userData, setUserData] = useState([]);
+
+    useEffect(() => {
+        const myQuery = query(collection(dbService, "users"),where(documentId(), "==", userObject.uid));
+
+        onSnapshot(query(collection(dbService, "users"),where(documentId(), "==", userObject.uid)), (snapshot) => {
+            setUserData(snapshot.docs.map((current) => ({...current.data()}))[0]);
+        });
+    }, [])
+
+
+
     let { classCode } = useParams();
 
     const [tab, setTab] = useState(1);
@@ -27,7 +40,6 @@ function Class({ userObject }) {
     const [myClasses, setMyClasses] = useState([]);
     const [classInfo, setClassInfo] = useState([]);
     const [myTests, setMyTests] = useState([]);
-    const [currentUserData, setCurrentUserData] = useState([]);
     const [myStudents, setMyStudents] = useState([]);
     const [studentClassInfo, setStudentsClassInfo] = useState([]);
     const [findingEmailResults, setFindingEmailResults] = useState([]);
@@ -46,27 +58,7 @@ function Class({ userObject }) {
 
 
 
-    // 사용자 정보 불러오기
-    useEffect(() => {
-        const myQuery = query(
-            collection(dbService, "users"),
-            where(documentId(), "==", userObject.uid),
-        );
-
-        onSnapshot(myQuery, (snapshot) => {
-            const tempArray = snapshot.docs.map((current) => ({
-                name: current.name,
-                userType: current.userType,
-
-                ...current.data()
-            }));
-
-            setCurrentUserData(tempArray[0]);
-        });
-    }, [])
-
-
-
+    
     // 자신이 생성한 강의인지 확인
     useEffect(() => {
         const myQuery = query(
@@ -329,7 +321,7 @@ function Class({ userObject }) {
     return (
         <div className={styles.classContainer}>
             {
-                myClasses.includes(classCode) && currentUserData?.userType === "teacher"
+                myClasses.includes(classCode) && userData?.userType === "teacher"
 
                     ?
 
@@ -646,7 +638,7 @@ function Class({ userObject }) {
                                             // 학생 인증이 된 경우
                                             <div>
                                                 {
-                                                    currentUserData?.userType === "student" && myStudents.map(row => row.email).includes(userObject.email)
+                                                    userData?.userType === "student" && myStudents.map(row => row.email).includes(userObject.email)
                                                         ?
                                                         <div>
                                                             <div className={styles.className}>

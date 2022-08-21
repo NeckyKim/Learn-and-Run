@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import { useEffect } from "react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
 import { collection } from "firebase/firestore";
@@ -15,25 +16,37 @@ import { orderBy } from "firebase/firestore";
 import { where } from "firebase/firestore";
 
 import Question from "./Question";
-import Clock from "./Clock";
 
 import styles from "./Test.module.css";
 
 
 
 function Test({ userObject }) {
+    // 사용자 정보 불러오기
+
+    const [userData, setUserData] = useState([]);
+    useEffect(() => {
+        const myQuery = query(collection(dbService, "users"), where(documentId(), "==", userObject.uid));
+
+        onSnapshot(query(collection(dbService, "users"), where(documentId(), "==", userObject.uid)), (snapshot) => {
+            setUserData(snapshot.docs.map((current) => ({ ...current.data() }))[0]);
+        });
+    }, [])
+
+
+
     let { classCode } = useParams();
     let { testCode } = useParams();
 
     const [tab, setTab] = useState(1);
 
-    const [currentUserData, setCurrentUserData] = useState([]);
     const [myClasses, setMyClasses] = useState([]);
     const [classInfo, setClassInfo] = useState([]);
     const [myTests, setMyTests] = useState([]);
     const [testInfo, setTestInfo] = useState([]);
     const [myQuestions, setMyQuestions] = useState([]);
     const [myStudents, setMyStudents] = useState([]);
+    const [myAnswersheets, setMyAnswersheets] = useState([]);
 
     const [isCreatingQuestion, setIsCreatingQuestion,] = useState(false);
     const [questionType, setQuestionType] = useState("서술형");
@@ -77,7 +90,7 @@ function Test({ userObject }) {
                 ...current.data()
             }));
 
-            setCurrentUserData(tempArray[0]);
+            setUserData(tempArray[0]);
         });
     }, [])
 
@@ -184,7 +197,7 @@ function Test({ userObject }) {
 
             const tempDate = new Date(tempArray[0].testDate);
 
-            
+
 
             const newFormat = String(tempDate.getFullYear()) + "-" + String(tempDate.getMonth() + 1) + "-" + String(tempDate.getDay())
             console.log(newFormat);
@@ -318,9 +331,27 @@ function Test({ userObject }) {
 
 
 
+    // 제출되어 있는 답안지 목록 확인
+    useEffect(() => {
+        const myQuery = query(
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            orderBy("studentId", "asc")
+        );
+
+        onSnapshot(myQuery, (snapshot) => {
+            const tempArray = snapshot.docs.map((current) => (
+                current.id
+            ));
+
+            setMyAnswersheets(tempArray);
+        });
+    }, [userData])
+
+
+
     // 답안지가 없는 경우 생성
-    if (answerSheet === undefined && currentUserData.userType === "student") {
-        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), {});
+    if (!myAnswersheets.includes(userData.userId) && userData.userType === "student") {
+        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userData.userId), { studentId: userData.userId });
     }
 
 
@@ -344,11 +375,20 @@ function Test({ userObject }) {
 
 
     // 현재 시험 응시 가능 확인
-    function isTestTime () {
-        return (
-            time.toLocaleTimeString() >= new Date(testInfo?.testDate).toLocaleTimeString() &&  time.toLocaleTimeString() <= new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()
-        )
+    function isTestTime() {
+        if (time.toLocaleTimeString() < new Date(testInfo?.testDate).toLocaleTimeString()) {
+            return "before"
+        }
+
+        else if (time.toLocaleTimeString() >= new Date(testInfo?.testDate).toLocaleTimeString() && time.toLocaleTimeString() <= new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
+            return "running"
+        }
+
+        else if (time.toLocaleTimeString() > new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
+            return "after"
+        }
     }
+
 
 
 
@@ -373,7 +413,7 @@ function Test({ userObject }) {
         <div className={styles.testContainer}>
 
             {
-                myClasses.includes(classCode) && myTests.includes(testCode) && currentUserData.userType === "teacher"
+                myClasses.includes(classCode) && myTests.includes(testCode) && userData.userType === "teacher"
 
                     ?
 
@@ -401,7 +441,7 @@ function Test({ userObject }) {
                             <button
                                 className={tab === 1 ? styles.tabOn : styles.tabOff}
                                 onClick={() => { setTab(1) }}>
-                                시험 설정
+                                설정
                             </button>
 
                             <button
@@ -413,7 +453,7 @@ function Test({ userObject }) {
                             <button
                                 className={tab === 3 ? styles.tabOn : styles.tabOff}
                                 onClick={() => { setTab(3) }}>
-                                응시자
+                                답안지
                             </button>
                         </div>
 
@@ -448,7 +488,7 @@ function Test({ userObject }) {
                                     <span className={styles.blueFont}>{testInfo?.testFeedback ? "공개 안 함" : "공개 함"}</span>
                                 </div>
 
-                                <button className={styles.acceptButton} onClick={() => {setIsEditingTestInfo(true); }}>
+                                <button className={styles.acceptButton} onClick={() => { setIsEditingTestInfo(true); }}>
                                     수정
                                 </button>
                             </div>
@@ -457,114 +497,114 @@ function Test({ userObject }) {
                         {
                             isEditingTestInfo
 
-                                &&
+                            &&
 
-                                <div className={styles.addBackground}>
-                                        <div className={styles.addContainer}>
-                                            <form onSubmit={updateTest}>
-                                                <div className={styles.addType}>
-                                                    이름
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    name="newTestName"
-                                                    value={newTestName}
-                                                    onChange={onChange}
-                                                    maxLength={30}
-                                                    required
-                                                    className={styles.addInput}
-                                                />
-                                                <br /><br />
-
-                                                <div className={styles.addType}>
-                                                    시작 시각
-                                                </div>
-                                                <input
-                                                    type="datetime-local"
-                                                    name="newTestDate"
-                                                    value={newTestDate}
-                                                    onChange={onChange}
-                                                    required
-                                                    className={styles.addInput}
-                                                />
-                                                <br /><br />
-
-                                                <div className={styles.addType}>
-                                                    진행 시간
-                                                </div>
-                                                <input
-                                                    type="number"
-                                                    name="newTestTime"
-                                                    value={newTestTime}
-                                                    onChange={onChange}
-                                                    required
-                                                    className={styles.addTimeInput}
-                                                />분
-                                                <br /><br />
-
-                                                <div className={styles.addType}>
-                                                    채점 방식
-                                                </div>
-                                                <input
-                                                        type="button"
-                                                        value="직접 채점"
-                                                        className={newTestAutoGrading === false ? styles.buttonOn1 : styles.buttonOff1}
-                                                        onClick={() => {
-                                                            setNewTestAutoGrading(false);
-                                                        }}
-                                                    />
-                                                <input
-                                                        type="button"
-                                                        value="종료 후 자동 채점"
-                                                        className={newTestAutoGrading === true ? styles.buttonOn3 : styles.buttonOff3}
-                                                        onClick={() => {
-                                                            setNewTestAutoGrading(true);
-                                                        }}
-                                                    />
-                                                <br /><br />
-
-                                                <div className={styles.addType}>
-                                                    시험지 및 점수 공개
-                                                </div>
-                                                <input
-                                                        type="button"
-                                                        value="공개 안 함"
-                                                        className={newTestFeedback === false ? styles.buttonOn1 : styles.buttonOff1}
-                                                        onClick={() => {
-                                                            setNewTestFeedback(false);
-                                                        }}
-                                                    />
-                                                <input
-                                                        type="button"
-                                                        value="공개 함"
-                                                        className={newTestFeedback === true ? styles.buttonOn3 : styles.buttonOff3}
-                                                        onClick={() => {
-                                                            setNewTestFeedback(true);
-                                                        }}
-                                                    />
-                                                <br /><br /><br />
-
-                                                <input
-                                                    className={styles.acceptButton}
-                                                    type="submit"
-                                                    value="만들기"
-                                                />
-
-                                                <button
-                                                    className={styles.cancelButton}
-                                                    onClick={() => {
-                                                        setIsEditingTestInfo(false);
-                                                        setNewTestName(beforeTestName);
-                                                        setNewTestDate(beforeTestDate);
-                                                        setNewTestTime(beforeTestTime);
-                                                        setNewTestAutoGrading(beforeTestAutoGrading);
-                                                        setNewTestFeedback(beofreTestFeedback);
-                                                    }}>
-                                                    취소
-                                                </button>
-                                            </form>
+                            <div className={styles.addBackground}>
+                                <div className={styles.addContainer}>
+                                    <form onSubmit={updateTest}>
+                                        <div className={styles.addType}>
+                                            이름
                                         </div>
-                                    </div>
+                                        <input
+                                            type="text"
+                                            name="newTestName"
+                                            value={newTestName}
+                                            onChange={onChange}
+                                            maxLength={30}
+                                            required
+                                            className={styles.addInput}
+                                        />
+                                        <br /><br />
+
+                                        <div className={styles.addType}>
+                                            시작 시각
+                                        </div>
+                                        <input
+                                            type="datetime-local"
+                                            name="newTestDate"
+                                            value={newTestDate}
+                                            onChange={onChange}
+                                            required
+                                            className={styles.addInput}
+                                        />
+                                        <br /><br />
+
+                                        <div className={styles.addType}>
+                                            진행 시간
+                                        </div>
+                                        <input
+                                            type="number"
+                                            name="newTestTime"
+                                            value={newTestTime}
+                                            onChange={onChange}
+                                            required
+                                            className={styles.addTimeInput}
+                                        />분
+                                        <br /><br />
+
+                                        <div className={styles.addType}>
+                                            채점 방식
+                                        </div>
+                                        <input
+                                            type="button"
+                                            value="직접 채점"
+                                            className={newTestAutoGrading === false ? styles.buttonOn1 : styles.buttonOff1}
+                                            onClick={() => {
+                                                setNewTestAutoGrading(false);
+                                            }}
+                                        />
+                                        <input
+                                            type="button"
+                                            value="종료 후 자동 채점"
+                                            className={newTestAutoGrading === true ? styles.buttonOn3 : styles.buttonOff3}
+                                            onClick={() => {
+                                                setNewTestAutoGrading(true);
+                                            }}
+                                        />
+                                        <br /><br />
+
+                                        <div className={styles.addType}>
+                                            시험지 및 점수 공개
+                                        </div>
+                                        <input
+                                            type="button"
+                                            value="공개 안 함"
+                                            className={newTestFeedback === false ? styles.buttonOn1 : styles.buttonOff1}
+                                            onClick={() => {
+                                                setNewTestFeedback(false);
+                                            }}
+                                        />
+                                        <input
+                                            type="button"
+                                            value="공개 함"
+                                            className={newTestFeedback === true ? styles.buttonOn3 : styles.buttonOff3}
+                                            onClick={() => {
+                                                setNewTestFeedback(true);
+                                            }}
+                                        />
+                                        <br /><br /><br />
+
+                                        <input
+                                            className={styles.acceptButton}
+                                            type="submit"
+                                            value="만들기"
+                                        />
+
+                                        <button
+                                            className={styles.cancelButton}
+                                            onClick={() => {
+                                                setIsEditingTestInfo(false);
+                                                setNewTestName(beforeTestName);
+                                                setNewTestDate(beforeTestDate);
+                                                setNewTestTime(beforeTestTime);
+                                                setNewTestAutoGrading(beforeTestAutoGrading);
+                                                setNewTestFeedback(beofreTestFeedback);
+                                            }}>
+                                            취소
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         }
 
                         {
@@ -576,7 +616,7 @@ function Test({ userObject }) {
                                 {
                                     myQuestions.map((current, index) => (
                                         <div>
-                                            <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={currentUserData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} />
+                                            <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} deleteButton={true} />
                                         </div>
                                     ))
                                 }
@@ -849,6 +889,21 @@ function Test({ userObject }) {
                                 }
                             </div>
                         }
+
+                        {
+                            tab === 3
+
+                            &&
+
+                            <div>
+                                {myStudents.map((current) => (
+                                    <div>
+                                        {current.name}&nbsp;&nbsp;&nbsp;
+                                        <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + current.studentId}>확인</Link>
+                                    </div>
+                                ))}
+                            </div>
+                        }
                     </div>
 
                     :
@@ -857,7 +912,7 @@ function Test({ userObject }) {
                     <div>
 
                         {
-                            myStudents.map(row => row.studentId).includes(userObject.uid) && currentUserData.userType === "student"
+                            myStudents.map(row => row.studentId).includes(userObject.uid) && userData.userType === "student"
 
                                 ?
 
@@ -888,7 +943,7 @@ function Test({ userObject }) {
                                             <div className={styles.timeSmallText}>현재 시간</div>
                                             <div className={styles.timeBigText}><CurrentTime /></div>
                                         </div>
-                                        
+
                                         <div>
                                             <div className={styles.timeSmallText}>종료 시간</div>
                                             <div className={styles.timeBigText}>
@@ -898,55 +953,87 @@ function Test({ userObject }) {
 
                                         {/* 응시 가능 여부 : {isTestTime() ? "가능" : "불가능"}<br /> */}
                                     </div>
-                                    
+
 
 
                                     {
-                                        isTestTime()
+                                        isTestTime() === "running"
 
-                                            ?
+                                        &&
+
+                                        <div>
+                                            {
+                                                showNotice
+
+                                                    ?
+
+                                                    <div>
+                                                        안내사항
+
+                                                        <button onClick={() => {
+                                                            setShowNotice(false);
+                                                        }}>
+                                                            시험 시작하기
+                                                        </button>
+                                                    </div>
+
+                                                    :
+
+                                                    <div>
+                                                        {
+                                                            myQuestions.map((current, index) => (
+                                                                <div>
+                                                                    <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} deleteButton={false} />
+                                                                </div>
+                                                            ))
+                                                        }
+                                                        <button onClick={sendAnswerSheet}>
+                                                            제출
+                                                        </button>
+                                                        {answerSheetMessage}
+
+                                                        <br /><br />
+                                                    </div>
+                                            }
+                                        </div>
+                                    }
+
+                                    {
+                                        isTestTime() === "before"
+
+                                        &&
+
+                                        <div className={styles.notTestTime}>
+                                            시험 시작 전입니다.
+                                        </div>
+                                    }
+
+                                    {
+                                        isTestTime() === "after"
+
+                                        &&
+
+                                        <div className={styles.notTestTime}>
+                                            시험이 종료되었습니다.
 
                                             <div>
                                                 {
-                                                    showNotice
+                                                    testInfo.testFeedback === true
 
                                                         ?
 
-                                                        <div>
-                                                            안내사항
-
-                                                            <button onClick={() => {
-                                                                setShowNotice(false);
-                                                            }}>
-                                                                시험 시작하기
-                                                            </button>
-                                                        </div>
+                                                        <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + userData.userId}>
+                                                            답안지 및 성적 확인
+                                                        </Link>
 
                                                         :
 
                                                         <div>
-                                                            {
-                                                                myQuestions.map((current, index) => (
-                                                                    <div>
-                                                                        <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={currentUserData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} />
-                                                                    </div>
-                                                                ))
-                                                            }
-                                                            <button onClick={sendAnswerSheet}>
-                                                                제출
-                                                            </button>
-                                                            {answerSheetMessage}
-
-                                                            <br /><br />
+                                                            시험 종료후 문제 및 답안이 공개되지 않은 시험입니다.
                                                         </div>
                                                 }
                                             </div>
-
-                                            :
-
-                                            <div className={styles.notTestTime}>
-                                                현재 응시 불가능
-                                            </div>
+                                        </div>
                                     }
                                 </div>
                                 :
