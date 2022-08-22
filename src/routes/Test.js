@@ -171,7 +171,7 @@ function Test({ userObject }) {
                 ...current.data()
             }));
 
-            setClassInfo(tempArray);
+            setClassInfo(tempArray[0]);
         });
     }, [])
 
@@ -301,8 +301,7 @@ function Test({ userObject }) {
         try {
             await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), answerSheet);
 
-            setAnswerSheetMessage("정상적으로 제출되었습니다." + `${Date(Date.now())}`);
-            console.log(Date(Date.now()))
+            setAnswerSheetMessage("정상적으로 제출되었습니다. " + new Date(Date.now()).toLocaleString());
         }
 
         catch (error) {
@@ -368,7 +367,7 @@ function Test({ userObject }) {
         }, []);
 
         return (
-            <span>{time.toLocaleTimeString()}</span>
+            <span>{time.toLocaleDateString()}<br />{time.toLocaleTimeString()}</span>
         )
     }
 
@@ -376,15 +375,15 @@ function Test({ userObject }) {
 
     // 현재 시험 응시 가능 확인
     function isTestTime() {
-        if (time.toLocaleTimeString() < new Date(testInfo?.testDate).toLocaleTimeString()) {
+        if (time.toLocaleString() < new Date(testInfo?.testDate).toLocaleString()) {
             return "before"
         }
 
-        else if (time.toLocaleTimeString() >= new Date(testInfo?.testDate).toLocaleTimeString() && time.toLocaleTimeString() <= new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
+        else if (time.toLocaleString() >= new Date(testInfo?.testDate).toLocaleString() && time.toLocaleString() <= new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
             return "running"
         }
 
-        else if (time.toLocaleTimeString() > new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
+        else if (time.toLocaleString() > new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleString()) {
             return "after"
         }
     }
@@ -420,7 +419,7 @@ function Test({ userObject }) {
                     // 강사 전용 화면
                     <div>
                         <div className={styles.className}>
-                            {classInfo[0]?.className}
+                            {classInfo?.className}
                         </div>
 
                         <div className={styles.classCode}>
@@ -465,7 +464,7 @@ function Test({ userObject }) {
                             <div>
                                 <div className={styles.testInfoElements}>
                                     <span className={styles.grayFont}>시작 시각</span>
-                                    <span className={styles.blueFont}>{new Date(testInfo?.testDate).toLocaleTimeString()}</span>
+                                    <span className={styles.blueFont}>{new Date(testInfo?.testDate).toLocaleString()}</span>
                                 </div>
 
                                 <div className={styles.testInfoElements}>
@@ -475,7 +474,7 @@ function Test({ userObject }) {
 
                                 <div className={styles.testInfoElements}>
                                     <span className={styles.grayFont}>종료 시각</span>
-                                    <span className={styles.blueFont}>{new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleTimeString()}</span>
+                                    <span className={styles.blueFont}>{new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleString()}</span>
                                 </div>
 
                                 <div className={styles.testInfoElements}>
@@ -616,7 +615,7 @@ function Test({ userObject }) {
                                 {
                                     myQuestions.map((current, index) => (
                                         <div>
-                                            <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} deleteButton={true} />
+                                            <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} buttons={true} />
                                         </div>
                                     ))
                                 }
@@ -859,9 +858,8 @@ function Test({ userObject }) {
                                                             정답
                                                         </div>
 
-                                                        {inputAnswer === 0 ? "참" : "거짓"}<br />
-                                                        <input type="button" value="참" onClick={() => { setInputAnswer(0); }} className={inputAnswer === 0 ? styles.buttonOn1 : styles.buttonOff1} />
-                                                        <input type="button" value="거짓" onClick={() => { setInputAnswer(1); }} className={inputAnswer === 1 ? styles.buttonOn3 : styles.buttonOff3} />
+                                                        <input type="button" value="참" onClick={() => { setInputAnswer(true); }} className={inputAnswer === true ? styles.buttonOn1 : styles.buttonOff1} />
+                                                        <input type="button" value="거짓" onClick={() => { setInputAnswer(false); }} className={inputAnswer === false ? styles.buttonOn3 : styles.buttonOff3} />
                                                     </div>
                                                 }
 
@@ -918,11 +916,11 @@ function Test({ userObject }) {
 
                                 <div>
                                     <div className={styles.className}>
-                                        {classInfo[0]?.className}
+                                        {classInfo?.className}
                                     </div>
 
                                     <div className={styles.classCode}>
-                                        {classInfo[0]?.teacherName}
+                                        {classInfo?.teacherName}
                                     </div>
                                     <br />
 
@@ -936,7 +934,10 @@ function Test({ userObject }) {
                                     <div className={styles.timeContainer}>
                                         <div>
                                             <div className={styles.timeSmallText}>시작 시간</div>
-                                            <div className={styles.timeBigText}>{new Date(testInfo?.testDate).toLocaleTimeString()}</div>
+                                            <div className={styles.timeBigText}>
+                                                {new Date(testInfo?.testDate).toLocaleDateString()}<br />
+                                                {new Date(testInfo?.testDate).toLocaleTimeString()}
+                                            </div>
                                         </div>
 
                                         <div>
@@ -947,6 +948,7 @@ function Test({ userObject }) {
                                         <div>
                                             <div className={styles.timeSmallText}>종료 시간</div>
                                             <div className={styles.timeBigText}>
+                                                {new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleDateString()}<br />
                                                 {new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleTimeString()}
                                             </div>
                                         </div>
@@ -983,7 +985,8 @@ function Test({ userObject }) {
                                                         {
                                                             myQuestions.map((current, index) => (
                                                                 <div>
-                                                                    <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} deleteButton={false} />
+                                                                    <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} buttons={false} />
+                                                                    <br />
                                                                 </div>
                                                             ))
                                                         }

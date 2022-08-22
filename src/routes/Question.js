@@ -2,13 +2,13 @@ import { dbService } from "../FirebaseModules";
 import { updateDoc } from "firebase/firestore";
 import { doc } from "firebase/firestore";
 import { deleteDoc } from "firebase/firestore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./Question.module.css"
 
 
 
-function Question({ number, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange, deleteButton }) {
+function Question({ number, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange, buttons, mode }) {
     const [isEditingQuestion, setIsEditingQuestion] = useState(false);
     const [newPoints, setNewPoints] = useState(points);
     const [newQuestion, setNewQuestion] = useState(question);
@@ -71,7 +71,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
             return { ...prev, [event.target.name]: event.target.value }
         });
     }
-
+    
 
 
     return (
@@ -92,7 +92,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                 </div>
 
                 {
-                    userType === "teacher"
+                    userType === "teacher" || mode === "feedback"
 
                         ?
 
@@ -117,7 +117,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
                                 &&
 
-                                <div>
+                                <div className={styles.choicesContainer}>
                                     {Object.keys(choices).length >= 1 && <div className={answer === 0 ? styles.answerBlue : styles.answerGray}>{choices[0]}</div>}
                                     {Object.keys(choices).length >= 2 && <div className={answer === 1 ? styles.answerBlue : styles.answerGray}>{choices[1]}</div>}
                                     {Object.keys(choices).length >= 3 && <div className={answer === 2 ? styles.answerBlue : styles.answerGray}>{choices[2]}</div>}
@@ -130,7 +130,16 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                     {Object.keys(choices).length >= 10 && <div className={answer === 9 ? styles.answerBlue : styles.answerGray}>{choices[9]}</div>}
                                 </div>
                             }
-                            <br />
+
+                            {
+                                type === "진위형"
+
+                                &&
+
+                                <div className={styles.answerContainer}>
+                                    {answer ? "참" : "거짓"}
+                                </div>
+                            }
 
                             {/* <button
                                 className={styles.editButton}
@@ -141,7 +150,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                             </button> */}
 
                             {
-                                deleteButton
+                                buttons
 
                                 &&
 
@@ -207,9 +216,23 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                     {Object.keys(choices).length >= 10 && <button className={answerSheet[number] === "9" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={9} onClick={onChangeAnswerSheet}>{choices[9]}</button>}
                                 </div>
                             }
+
+                            {
+                                type === "진위형"
+
+                                &&
+
+                                <div>
+                                    <div className={styles.answerZone}>
+                                        답안
+                                    </div>
+
+                                    <button name={number} value={true} onClick={onChangeAnswerSheet} className={answerSheet[number] === "true" ? styles.buttonTrueOn : styles.buttonTrueOff}>참</button>
+                                    <button name={number} value={false} onClick={onChangeAnswerSheet} className={answerSheet[number] === "false" ? styles.buttonFalseOn : styles.buttonFalseOff}>거짓</button>
+                                </div>
+                            }
                         </div>
                 }
-                <br />
             </div>
 
 

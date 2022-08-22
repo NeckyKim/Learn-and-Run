@@ -154,7 +154,7 @@ function Home({ userObject }) {
 
                     // 사용자 정보가 DB에 있는 경우
                     <div>
-                        <div className={styles.userInfo}>
+                        <div className={styles.userInfoContainer}>
                             <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + userData.profileIcon + ".png"} />
 
                             {/* 사용자 정보 표시 */}
@@ -179,7 +179,7 @@ function Home({ userObject }) {
                                 ?
 
                                 // 강사 전용 화면
-                                <div className={styles.classListZone}>
+                                <div className={styles.classListContainer}>
                                     <div className={styles.classListTitle}>
                                         강의 목록
                                     </div>
@@ -198,10 +198,8 @@ function Home({ userObject }) {
                                                     </div>
 
                                                     <div className={styles.goToClassButton}>
-                                                    강의실 가기
-                                                        <img alt="home" src={process.env.PUBLIC_URL + "/icon/goToClass.png"} />
+                                                        강의실 가기
                                                     </div>
-
                                                 </div>
                                             </Link>
                                         ))

@@ -47,7 +47,7 @@ function Profile({ userObject }) {
 
 
     return (
-        <div className={styles.userInfo}>
+        <div className={styles.userInfoContainer}>
             <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + currentUserData.profileIcon + ".png"} />
             <br />
 

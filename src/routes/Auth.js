@@ -7,6 +7,8 @@ import { setPersistence } from "firebase/auth";
 import { browserSessionPersistence } from "firebase/auth";
 
 import { GoogleAuthProvider } from "firebase/auth";
+import { FacebookAuthProvider } from "firebase/auth";
+import { TwitterAuthProvider } from "firebase/auth";
 
 import styles from "./Auth.module.css"
 
@@ -28,13 +30,13 @@ function Auth() {
                 provider = new GoogleAuthProvider();
             }
 
-            // else if (name === "facebook") {
-            //     provider = new FacebookAuthProvider();
-            // }
+            else if (name === "facebook") {
+                provider = new FacebookAuthProvider();
+            }
 
-            // else if (name === "twitter") {
-            //     provider = new TwitterAuthProvider();
-            // }
+            else if (name === "twitter") {
+                provider = new TwitterAuthProvider();
+            }
 
             await setPersistence(auth, browserSessionPersistence)
                 .then(() => {
@@ -63,17 +65,26 @@ function Auth() {
         <div className={styles.container}>
             <div className={styles.background} />
 
+            <img alt="icon" className={styles.mainIcon} src={process.env.PUBLIC_URL + "/learn-and-run.png"} />
+
             <div className={styles.title}>
-                login
+                로그인
             </div>
             <br />
 
-            <button
-                name="google"
-                onClick={onSocialClick}
-                className={styles.googleButton}
-            >
-                Google 로그인
+            <button name="google" onClick={onSocialClick} className={styles.googleButton}>
+                <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/google.png"} />
+                Google 계정으로 로그인
+            </button>
+
+            <button name="facebook" onClick={onSocialClick} className={styles.facebookButton}>
+            <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/facebook.png"} />
+                Facebook 계정으로 로그인
+            </button>
+
+            <button name="twitter" onClick={onSocialClick} className={styles.twitterButton}>
+            <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/twitter.png"} />
+                Twitter 계정으로 로그인
             </button>
 
             <div className={styles.errorMessage}>
