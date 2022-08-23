@@ -260,7 +260,7 @@ function Home({ userObject }) {
                                 :
 
                                 // 학생 전용 화면
-                                <div className={styles.classListZone}>
+                                <div className={styles.classListContainer}>
                                     <div className={styles.classListTitle}>
                                         강의 목록
                                     </div>

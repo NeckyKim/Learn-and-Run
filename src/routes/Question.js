@@ -67,11 +67,15 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
 
     function onChangeAnswerSheet(event) {
+       if (typeof(event.target.value) === Number) {
+            console.log("NUMBER")
+       }
+
         answerSheetChange((prev) => {
-            return { ...prev, [event.target.name]: event.target.value }
+            return { ...prev, [event.target.name]: event.target.value}
         });
-    }
-    
+    }  
+
 
 
     return (
@@ -98,17 +102,18 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
                         // 강사 전용 정답칸, 수정 버튼, 삭제 버튼
                         <div>
-                            <div className={styles.answerZone}>
-                                정답
-                            </div>
-
                             {
                                 type === "주관식"
 
                                 &&
+                                <div>
+                                    <div className={styles.answerZone}>
+                                        정답
+                                    </div>
 
-                                <div className={styles.answerContainer}>
-                                    {answer}
+                                    <div className={styles.answerContainer}>
+                                        {answer}
+                                    </div>
                                 </div>
                             }
 
@@ -116,18 +121,22 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                 type === "객관식"
 
                                 &&
-
-                                <div className={styles.choicesContainer}>
-                                    {Object.keys(choices).length >= 1 && <div className={answer === 0 ? styles.answerBlue : styles.answerGray}>{choices[0]}</div>}
-                                    {Object.keys(choices).length >= 2 && <div className={answer === 1 ? styles.answerBlue : styles.answerGray}>{choices[1]}</div>}
-                                    {Object.keys(choices).length >= 3 && <div className={answer === 2 ? styles.answerBlue : styles.answerGray}>{choices[2]}</div>}
-                                    {Object.keys(choices).length >= 4 && <div className={answer === 3 ? styles.answerBlue : styles.answerGray}>{choices[3]}</div>}
-                                    {Object.keys(choices).length >= 5 && <div className={answer === 4 ? styles.answerBlue : styles.answerGray}>{choices[4]}</div>}
-                                    {Object.keys(choices).length >= 6 && <div className={answer === 5 ? styles.answerBlue : styles.answerGray}>{choices[5]}</div>}
-                                    {Object.keys(choices).length >= 7 && <div className={answer === 6 ? styles.answerBlue : styles.answerGray}>{choices[6]}</div>}
-                                    {Object.keys(choices).length >= 8 && <div className={answer === 7 ? styles.answerBlue : styles.answerGray}>{choices[7]}</div>}
-                                    {Object.keys(choices).length >= 9 && <div className={answer === 8 ? styles.answerBlue : styles.answerGray}>{choices[8]}</div>}
-                                    {Object.keys(choices).length >= 10 && <div className={answer === 9 ? styles.answerBlue : styles.answerGray}>{choices[9]}</div>}
+                                <div>
+                                    <div className={styles.answerZone}>
+                                        정답
+                                    </div>
+                                    <div className={styles.choicesContainer}>
+                                        {Object.keys(choices).length >= 1 && <div className={answer === 0 ? styles.answerBlue : styles.answerGray}>{choices[0]}</div>}
+                                        {Object.keys(choices).length >= 2 && <div className={answer === 1 ? styles.answerBlue : styles.answerGray}>{choices[1]}</div>}
+                                        {Object.keys(choices).length >= 3 && <div className={answer === 2 ? styles.answerBlue : styles.answerGray}>{choices[2]}</div>}
+                                        {Object.keys(choices).length >= 4 && <div className={answer === 3 ? styles.answerBlue : styles.answerGray}>{choices[3]}</div>}
+                                        {Object.keys(choices).length >= 5 && <div className={answer === 4 ? styles.answerBlue : styles.answerGray}>{choices[4]}</div>}
+                                        {Object.keys(choices).length >= 6 && <div className={answer === 5 ? styles.answerBlue : styles.answerGray}>{choices[5]}</div>}
+                                        {Object.keys(choices).length >= 7 && <div className={answer === 6 ? styles.answerBlue : styles.answerGray}>{choices[6]}</div>}
+                                        {Object.keys(choices).length >= 8 && <div className={answer === 7 ? styles.answerBlue : styles.answerGray}>{choices[7]}</div>}
+                                        {Object.keys(choices).length >= 9 && <div className={answer === 8 ? styles.answerBlue : styles.answerGray}>{choices[8]}</div>}
+                                        {Object.keys(choices).length >= 10 && <div className={answer === 9 ? styles.answerBlue : styles.answerGray}>{choices[9]}</div>}
+                                    </div>
                                 </div>
                             }
 
@@ -136,8 +145,13 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
                                 &&
 
-                                <div className={styles.answerContainer}>
-                                    {answer ? "참" : "거짓"}
+                                <div>
+                                    <div className={styles.answerZone}>
+                                        정답
+                                    </div>
+                                    <div className={styles.answerContainer}>
+                                        {answer ? "참" : "거짓"}
+                                    </div>
                                 </div>
                             }
 
@@ -187,7 +201,26 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                 </div>
                             }
 
+                            {
+                                type === "서술형"
 
+                                &&
+
+                                <div>
+                                    <div className={styles.answerZone}>
+                                        답안
+                                    </div>
+
+                                    <textarea
+                                        type="text"
+                                        name={number}
+                                        onChange={onChangeAnswerSheet}
+                                        value={answerSheet[number]}
+                                        spellCheck="false"
+                                        className={styles.answerContainer}
+                                    />
+                                </div>
+                            }
 
                             {
                                 type === "객관식"
@@ -195,6 +228,10 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                 &&
 
                                 <div>
+                                    <div className={styles.answerZone}>
+                                        답안
+                                    </div>
+
                                     {Object.keys(choices).length >= 1 && <button className={answerSheet[number] === "0" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={0} onClick={onChangeAnswerSheet}>{choices[0]}</button>}
 
                                     {Object.keys(choices).length >= 2 && <button className={answerSheet[number] === "1" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={1} onClick={onChangeAnswerSheet}>{choices[1]}</button>}

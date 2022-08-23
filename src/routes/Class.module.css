@@ -140,19 +140,22 @@
 .addBackground {
     width: 100vw;
     height: 100vh;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    padding-top: 60px;
 }
 
 .addContainer {
     width: 30vw;
+    min-width: 350px;
     font-size: 1.2rem;
     font-weight: 1000;
     display: block;
     margin: 0px auto;
-    margin-top: 30vh;
     padding: 20px;
     background-color: rgb(255, 255, 255);
     border: 1px solid rgb(230, 230, 230);
@@ -195,10 +198,14 @@
     height: 40px;
     font-size: 1.3rem;
     font-weight: 1000;
-    padding: 0px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgb(230, 230, 230);
     color: rgb(0, 100, 255);
-    border: transparent;
-    border-bottom: 2px solid rgb(0, 100, 255);
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     margin-right: 10px;
 }
 
@@ -220,15 +227,16 @@
 .findEmailButton {
     width: 120px;
     height: 40px;
-    padding-left: 20px;
-    padding-right: 20px;
     font-size: 1rem;
     font-weight: 1000;
-    border: transparent;
+    border: none;
     border-radius: 5px;
     color: rgb(255, 255, 255);
     background-color: rgb(250, 150, 0);
-    margin-bottom: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     cursor: pointer;
 }
 

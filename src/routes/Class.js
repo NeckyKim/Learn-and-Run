@@ -49,7 +49,6 @@ function Class({ userObject }) {
     const [inputTestName, setInputTestName] = useState("");
     const [inputTestDate, setInputTestDate] = useState("");
     const [inputTestTime, setInputTestTime] = useState("");
-    const [inputAutoGrading, setInputAutoGrading] = useState(false);
     const [inputFeedback, setInputFeedback] = useState(false);
 
     const [isAddingStudent, setIsAddingStudent] = useState(false);
@@ -193,7 +192,6 @@ function Class({ userObject }) {
             testName: inputTestName,
             testDate: Date.parse(inputTestDate),
             testTime: inputTestTime,
-            testAutoGrading: inputAutoGrading,
             testFeedback: inputFeedback,
         });
 
@@ -554,27 +552,6 @@ function Class({ userObject }) {
                                                     required
                                                     className={styles.addTimeInput}
                                                 />분
-                                                <br /><br />
-
-                                                <div className={styles.addType}>
-                                                    채점 방식
-                                                </div>
-                                                <input
-                                                        type="button"
-                                                        value="직접 채점"
-                                                        className={inputAutoGrading === false ? styles.buttonOn1 : styles.buttonOff1}
-                                                        onClick={() => {
-                                                            setInputAutoGrading(false);
-                                                        }}
-                                                    />
-                                                <input
-                                                        type="button"
-                                                        value="종료 후 자동 채점"
-                                                        className={inputAutoGrading === true ? styles.buttonOn3 : styles.buttonOff3}
-                                                        onClick={() => {
-                                                            setInputAutoGrading(true);
-                                                        }}
-                                                    />
                                                 <br /><br />
 
                                                 <div className={styles.addType}>

@@ -64,13 +64,11 @@ function Test({ userObject }) {
     const [newTestName, setNewTestName] = useState();
     const [newTestDate, setNewTestDate] = useState();
     const [newTestTime, setNewTestTime] = useState();
-    const [newTestAutoGrading, setNewTestAutoGrading] = useState();
     const [newTestFeedback, setNewTestFeedback] = useState();
 
     var beforeTestName = testInfo?.testName;
     var beforeTestDate = testInfo?.testDate;
     var beforeTestTime = testInfo?.testTime;
-    var beforeTestAutoGrading = testInfo?.testAutoGrading;
     var beofreTestFeedback = testInfo?.testFeedback;
 
 
@@ -84,9 +82,6 @@ function Test({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                name: current.name,
-                userType: current.userType,
-
                 ...current.data()
             }));
 
@@ -141,9 +136,6 @@ function Test({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                name: current.name,
-                email: current.email,
-
                 ...current.data()
             }));
 
@@ -162,12 +154,7 @@ function Test({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                className: current.className,
                 classCode: current.id,
-                establishedDay: current.establishedDay,
-                teacherId: current.teacherId,
-                teacherName: current.teacherName,
-
                 ...current.data()
             }));
 
@@ -186,28 +173,14 @@ function Test({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                testName: current.testName,
-                testDate: current.testDate,
-                testTime: current.testTime,
-                testAutoGrading: current.testAutoGrading,
-                testFeedback: current.testFeedback,
-
                 ...current.data()
             }));
 
-            const tempDate = new Date(tempArray[0].testDate);
-
-
-
-            const newFormat = String(tempDate.getFullYear()) + "-" + String(tempDate.getMonth() + 1) + "-" + String(tempDate.getDay())
-            console.log(newFormat);
-
             setTestInfo(tempArray[0]);
             setNewTestName(tempArray[0].testName);
-            setNewTestDate(newFormat);
             setNewTestTime(tempArray[0].testTime);
-            setNewTestAutoGrading(tempArray[0].testAutoGrading);
             setNewTestFeedback(tempArray[0].testFeedback);
+            setNewTestDate(new Date(tempArray[0].testDate).toLocaleDateString("sv-SE") + "T" + new Date(tempArray[0].testDate).toLocaleTimeString('en-US', { hour12: false }))
         });
     }, [])
 
@@ -222,13 +195,6 @@ function Test({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                id: current.id,
-                points: current.points,
-                question: current.question,
-                answer: current.answer,
-                type: current.type,
-                choice: current.choice,
-
                 ...current.data()
             }));
 
@@ -295,11 +261,26 @@ function Test({ userObject }) {
 
 
 
+    // 답안지 제출
     async function sendAnswerSheet(event) {
         event.preventDefault();
 
+        var initReportCard = {};
+        const numberOfAnswers =  Number(Object.keys(answerSheet).length) - 1;
+        console.log(numberOfAnswers);
+
+
+        for(var i = 0; i < numberOfAnswers; i++) {
+            initReportCard[i] = "notgraded";
+        }
+        initReportCard.totalScore = 0;
+        initReportCard.studentsScore = 0;
+
+        console.log(initReportCard);
+
         try {
             await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), answerSheet);
+            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", userObject.uid), initReportCard);
 
             setAnswerSheetMessage("정상적으로 제출되었습니다. " + new Date(Date.now()).toLocaleString());
         }
@@ -308,8 +289,8 @@ function Test({ userObject }) {
             setAnswerSheetMessage("제출 과정에서 오류가 발생했습니다.");
             console.log(error);
         }
-    }
-
+    }    
+       
 
 
     // 제출되어있는 답안지 불러오기
@@ -375,19 +356,22 @@ function Test({ userObject }) {
 
     // 현재 시험 응시 가능 확인
     function isTestTime() {
-        if (time.toLocaleString() < new Date(testInfo?.testDate).toLocaleString()) {
+        var startTime = new Date(testInfo.testDate).toLocaleString();
+        var currentTime = time.toLocaleString();
+        var finishTime = new Date(testInfo.testDate + Number(testInfo.testTime) * 60000).toLocaleString();
+
+        if (currentTime < startTime) {
             return "before"
         }
 
-        else if (time.toLocaleString() >= new Date(testInfo?.testDate).toLocaleString() && time.toLocaleString() <= new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleTimeString()) {
+        else if (currentTime > startTime && currentTime < finishTime) {
             return "running"
         }
 
-        else if (time.toLocaleString() > new Date(testInfo?.testDate + testInfo.testTime * 60000).toLocaleString()) {
+        else if (currentTime > finishTime) {
             return "after"
         }
     }
-
 
 
 
@@ -399,7 +383,6 @@ function Test({ userObject }) {
             testName: newTestName,
             testDate: Date.parse(newTestDate),
             testTime: newTestTime,
-            testAutoGrading: newTestAutoGrading,
             testFeedback: newTestFeedback,
         });
 
@@ -478,11 +461,6 @@ function Test({ userObject }) {
                                 </div>
 
                                 <div className={styles.testInfoElements}>
-                                    <span className={styles.grayFont}>채점 방식</span>
-                                    <span className={styles.blueFont}>{testInfo?.testAutoGrading ? "종료 후 자동 채점" : "직접 채점"}</span>
-                                </div>
-
-                                <div className={styles.testInfoElements}>
                                     <span className={styles.grayFont}>시험지 및 점수 공개</span>
                                     <span className={styles.blueFont}>{testInfo?.testFeedback ? "공개 안 함" : "공개 함"}</span>
                                 </div>
@@ -542,27 +520,6 @@ function Test({ userObject }) {
                                         <br /><br />
 
                                         <div className={styles.addType}>
-                                            채점 방식
-                                        </div>
-                                        <input
-                                            type="button"
-                                            value="직접 채점"
-                                            className={newTestAutoGrading === false ? styles.buttonOn1 : styles.buttonOff1}
-                                            onClick={() => {
-                                                setNewTestAutoGrading(false);
-                                            }}
-                                        />
-                                        <input
-                                            type="button"
-                                            value="종료 후 자동 채점"
-                                            className={newTestAutoGrading === true ? styles.buttonOn3 : styles.buttonOff3}
-                                            onClick={() => {
-                                                setNewTestAutoGrading(true);
-                                            }}
-                                        />
-                                        <br /><br />
-
-                                        <div className={styles.addType}>
                                             시험지 및 점수 공개
                                         </div>
                                         <input
@@ -586,7 +543,7 @@ function Test({ userObject }) {
                                         <input
                                             className={styles.acceptButton}
                                             type="submit"
-                                            value="만들기"
+                                            value="수정"
                                         />
 
                                         <button
@@ -596,7 +553,6 @@ function Test({ userObject }) {
                                                 setNewTestName(beforeTestName);
                                                 setNewTestDate(beforeTestDate);
                                                 setNewTestTime(beforeTestTime);
-                                                setNewTestAutoGrading(beforeTestAutoGrading);
                                                 setNewTestFeedback(beofreTestFeedback);
                                             }}>
                                             취소
@@ -644,19 +600,8 @@ function Test({ userObject }) {
                                                     </div>
                                                     <input
                                                         type="button"
-                                                        value="주관식"
-                                                        className={questionType === "주관식" ? styles.buttonOn1 : styles.buttonOff1}
-                                                        onClick={() => {
-                                                            setQuestionType("주관식");
-                                                            setInputAnswer("");
-                                                            setValueOfChoices({});
-                                                        }}
-                                                    />
-
-                                                    <input
-                                                        type="button"
                                                         value="객관식"
-                                                        className={questionType === "객관식" ? styles.buttonOn2 : styles.buttonOff2}
+                                                        className={questionType === "객관식" ? styles.buttonOn1 : styles.buttonOff1}
                                                         onClick={() => {
                                                             setQuestionType("객관식");
                                                             setInputAnswer(0);
@@ -668,15 +613,44 @@ function Test({ userObject }) {
                                                     <input
                                                         type="button"
                                                         value="진위형"
-                                                        className={questionType === "진위형" ? styles.buttonOn3 : styles.buttonOff3}
+                                                        className={questionType === "진위형" ? styles.buttonOn2 : styles.buttonOff2}
                                                         onClick={() => {
                                                             setQuestionType("진위형");
                                                             setInputAnswer(0);
                                                             setValueOfChoices({});
                                                         }}
                                                     />
+
+                                                    <input
+                                                        type="button"
+                                                        value="주관식"
+                                                        className={questionType === "주관식" ? styles.buttonOn2 : styles.buttonOff2}
+                                                        onClick={() => {
+                                                            setQuestionType("주관식");
+                                                            setInputAnswer("");
+                                                            setValueOfChoices({});
+                                                        }}
+                                                    />
+
+                                                    <input
+                                                        type="button"
+                                                        value="서술형"
+                                                        className={questionType === "서술형" ? styles.buttonOn3 : styles.buttonOff3}
+                                                        onClick={() => {
+                                                            setQuestionType("서술형");
+                                                            setInputAnswer("");
+                                                            setValueOfChoices({});
+                                                        }}
+                                                    />
                                                 </div>
-                                                <br />
+                                            
+                                                <span className={styles.addTypeComment}>
+                                                    {questionType} 유형 문제는&nbsp;
+                                                    <span className={questionType !== "서술형" ? styles.addTypeCommentBlue : styles.addTypeCommentRed}>
+                                                        {questionType !== "서술형" ? "자동으로 채점됩니다." : "자동으로 채점되지 않습니다."}
+                                                    </span>
+                                                </span>
+                                                <br /><br />
 
                                                 <div>
                                                     <div className={styles.addType}>
@@ -709,29 +683,6 @@ function Test({ userObject }) {
                                                         className={styles.addQuestion}
                                                     />
                                                 </div>
-
-                                                {
-                                                    questionType === "주관식"
-
-                                                    &&
-
-                                                    <div>
-                                                        <br />
-                                                        <div className={styles.addType}>
-                                                            정답
-                                                        </div>
-
-                                                        <textarea
-                                                            type="text"
-                                                            name="answer"
-                                                            value={inputAnswer}
-                                                            onChange={onChange}
-                                                            required
-                                                            spellCheck="false"
-                                                            className={styles.addAnswer}
-                                                        />
-                                                    </div>
-                                                }
 
                                                 {
                                                     questionType === "객관식"
@@ -860,6 +811,29 @@ function Test({ userObject }) {
 
                                                         <input type="button" value="참" onClick={() => { setInputAnswer(true); }} className={inputAnswer === true ? styles.buttonOn1 : styles.buttonOff1} />
                                                         <input type="button" value="거짓" onClick={() => { setInputAnswer(false); }} className={inputAnswer === false ? styles.buttonOn3 : styles.buttonOff3} />
+                                                    </div>
+                                                }
+
+                                                {
+                                                    questionType === "주관식"
+
+                                                    &&
+
+                                                    <div>
+                                                        <br />
+                                                        <div className={styles.addType}>
+                                                            정답
+                                                        </div>
+
+                                                        <textarea
+                                                            type="text"
+                                                            name="answer"
+                                                            value={inputAnswer}
+                                                            onChange={onChange}
+                                                            required
+                                                            spellCheck="false"
+                                                            className={styles.addAnswer}
+                                                        />
                                                     </div>
                                                 }
 
