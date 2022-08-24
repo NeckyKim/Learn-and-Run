@@ -24,10 +24,10 @@ function Class({ userObject }) {
     const [userData, setUserData] = useState([]);
 
     useEffect(() => {
-        const myQuery = query(collection(dbService, "users"),where(documentId(), "==", userObject.uid));
+        const myQuery = query(collection(dbService, "users"), where(documentId(), "==", userObject.uid));
 
-        onSnapshot(query(collection(dbService, "users"),where(documentId(), "==", userObject.uid)), (snapshot) => {
-            setUserData(snapshot.docs.map((current) => ({...current.data()}))[0]);
+        onSnapshot(query(collection(dbService, "users"), where(documentId(), "==", userObject.uid)), (snapshot) => {
+            setUserData(snapshot.docs.map((current) => ({ ...current.data() }))[0]);
         });
     }, [])
 
@@ -57,7 +57,7 @@ function Class({ userObject }) {
 
 
 
-    
+
     // 자신이 생성한 강의인지 확인
     useEffect(() => {
         const myQuery = query(
@@ -110,8 +110,6 @@ function Class({ userObject }) {
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
                 id: current.id,
-                testName: current.testName,
-
                 ...current.data()
             }));
 
@@ -130,10 +128,6 @@ function Class({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                authenticate: current.authenticate,
-                name: current.name,
-                email: current.email,
-
                 ...current.data()
             }));
 
@@ -188,7 +182,7 @@ function Class({ userObject }) {
     async function createTest(event) {
         event.preventDefault();
 
-        await addDoc(collection(dbService, "classes/" + classCode + "/tests"), {
+        await addDoc(collection(dbService, "classes", classCode, "tests"), {
             testName: inputTestName,
             testDate: Date.parse(inputTestDate),
             testTime: inputTestTime,
@@ -197,16 +191,6 @@ function Class({ userObject }) {
 
         setIsCreatingTest(false);
         setInputTestName("");
-    }
-
-
-
-    async function deleteTest(testCode) {
-        const ok = window.confirm("해당 시험을 삭제하시겠습니까?")
-
-        if (ok) {
-            await deleteDoc(doc(dbService, "classes", classCode, "tests", testCode));
-        }
     }
 
 
@@ -469,27 +453,17 @@ function Class({ userObject }) {
                             <div>
                                 {
                                     myTests.map((current) => (
-                                        <div className={styles.testElementsZone}>
-                                            <div className={styles.testName}>
-                                                {current.testName}
+                                        <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: "none" }}>
+                                            <div className={styles.testElementsZone}>
+                                                <div className={styles.testName}>
+                                                    {current.testName}
+                                                </div>
+                                                
+                                                <div className={styles.testDate}>
+                                                    {new Date(current.testDate).toLocaleString()}
+                                                </div>
                                             </div>
-
-                                            <div>
-                                                <Link to={"/class/" + classCode + "/test/" + current.id} style={{ textDecoration: 'none' }}>
-                                                    <button className={styles.testSettingButton}>
-                                                        관리
-                                                    </button>
-                                                </Link>
-                                            </div>
-
-                                            <button
-                                                className={styles.testDeleteButton}
-                                                onClick={() => {
-                                                    deleteTest(current.id);
-                                                }}>
-                                                삭제
-                                            </button>
-                                        </div>
+                                        </Link>                                  
                                     ))
                                 }
 
@@ -558,21 +532,21 @@ function Class({ userObject }) {
                                                     시험지 및 점수 공개
                                                 </div>
                                                 <input
-                                                        type="button"
-                                                        value="공개 안 함"
-                                                        className={inputFeedback === false ? styles.buttonOn1 : styles.buttonOff1}
-                                                        onClick={() => {
-                                                            setInputFeedback(false);
-                                                        }}
-                                                    />
+                                                    type="button"
+                                                    value="공개 안 함"
+                                                    className={inputFeedback === false ? styles.buttonOn1 : styles.buttonOff1}
+                                                    onClick={() => {
+                                                        setInputFeedback(false);
+                                                    }}
+                                                />
                                                 <input
-                                                        type="button"
-                                                        value="공개 함"
-                                                        className={inputFeedback === true ? styles.buttonOn3 : styles.buttonOff3}
-                                                        onClick={() => {
-                                                            setInputFeedback(true);
-                                                        }}
-                                                    />
+                                                    type="button"
+                                                    value="공개 함"
+                                                    className={inputFeedback === true ? styles.buttonOn3 : styles.buttonOff3}
+                                                    onClick={() => {
+                                                        setInputFeedback(true);
+                                                    }}
+                                                />
                                                 <br /><br /><br />
 
                                                 <input

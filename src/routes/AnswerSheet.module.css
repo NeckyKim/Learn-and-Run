@@ -22,6 +22,42 @@
     color: rgb(150, 150, 150);
 }
 
+.studentContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid rgb(0, 100, 255);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.studentName {
+    font-size: 1.8rem;
+    font-weight: 1000;
+    margin-left: 10px;
+}
+
+.statisticContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    text-align: center;
+    align-self: center;
+}
+
+.statisticType {
+    font-size: 1rem;
+    font-weight: 1000;
+    color: rgb(150, 150, 150);
+}
+
+.statisticValue {
+    font-size: 1.8rem;
+    font-weight: 1000;
+    color: rgb(0, 100, 255);
+}
+
 .gradingZone {
     font-size: 1.2rem;
     font-weight: 1000;
@@ -126,8 +162,14 @@
     text-align: center;
 }
 
+
+
 @media screen and (max-width: 1200px) {
     .answersheetContainer {
         width: 90vw;
+    }
+
+    .studentContainer {
+        grid-template-columns: 1fr 2fr;
     }
 }

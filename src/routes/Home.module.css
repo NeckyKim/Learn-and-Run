@@ -86,7 +86,7 @@
 
 .classListElements {
     display: grid;
-    grid-template-columns: 1fr 130px;
+    grid-template-columns: 1fr 110px;
     height: 60px;
     align-items: center;
 }
@@ -121,7 +121,7 @@
 }
 
 .goToClassButton {
-    width: 130px;
+    width: 110px;
     height: 30px;
     font-size: 1rem;
     font-weight: 1000;

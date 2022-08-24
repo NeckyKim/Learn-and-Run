@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import { useEffect } from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
@@ -10,6 +11,7 @@ import { doc } from "firebase/firestore";
 import { addDoc } from "firebase/firestore";
 import { setDoc } from "firebase/firestore";
 import { updateDoc } from "firebase/firestore";
+import { deleteDoc } from "firebase/firestore";
 import { onSnapshot } from "firebase/firestore";
 import { query } from "firebase/firestore";
 import { orderBy } from "firebase/firestore";
@@ -37,6 +39,7 @@ function Test({ userObject }) {
 
     let { classCode } = useParams();
     let { testCode } = useParams();
+    var navigate = useNavigate();
 
     const [tab, setTab] = useState(1);
 
@@ -47,6 +50,7 @@ function Test({ userObject }) {
     const [myQuestions, setMyQuestions] = useState([]);
     const [myStudents, setMyStudents] = useState([]);
     const [myAnswersheets, setMyAnswersheets] = useState([]);
+    const [myReportCards, setMyReportCards] = useState([]);
 
     const [isCreatingQuestion, setIsCreatingQuestion,] = useState(false);
     const [questionType, setQuestionType] = useState("서술형");
@@ -142,6 +146,24 @@ function Test({ userObject }) {
             setMyStudents(tempArray);
         });
     }, [])
+
+
+
+    // 제출되어 있는 답안지 목록 확인
+    useEffect(() => {
+        const myQuery = query(
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            orderBy("studentId", "asc")
+        );
+
+        onSnapshot(myQuery, (snapshot) => {
+            const tempArray = snapshot.docs.map((current) => (
+                current.id
+            ));
+
+            setMyAnswersheets(tempArray);
+        });
+    }, [userData])
 
 
 
@@ -266,17 +288,13 @@ function Test({ userObject }) {
         event.preventDefault();
 
         var initReportCard = {};
-        const numberOfAnswers =  Number(Object.keys(answerSheet).length) - 1;
-        console.log(numberOfAnswers);
+        const numberOfQuestions = Number(Object.keys(myQuestions).length);
 
-
-        for(var i = 0; i < numberOfAnswers; i++) {
+        for (var i = 0; i < numberOfQuestions; i++) {
             initReportCard[i] = "notgraded";
         }
-        initReportCard.totalScore = 0;
-        initReportCard.studentsScore = 0;
-
-        console.log(initReportCard);
+        initReportCard.totalScore = "noscore";
+        initReportCard.studentsScore = "noscore";
 
         try {
             await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), answerSheet);
@@ -289,8 +307,23 @@ function Test({ userObject }) {
             setAnswerSheetMessage("제출 과정에서 오류가 발생했습니다.");
             console.log(error);
         }
-    }    
-       
+    }
+
+
+
+    // 답안지가 없는 경우 생성
+    if (!myAnswersheets.includes(userData.userId) && userData.userType === "student") {
+        var initAnswerSheet = {};
+        const numberOfQuestions = Number(Object.keys(myQuestions).length);
+
+        for (var i = 0; i < numberOfQuestions; i++) {
+            initAnswerSheet[i] = null;
+        }
+        initAnswerSheet.studentId = userData.userId;
+
+        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userData.userId), initAnswerSheet);
+    }
+
 
 
     // 제출되어있는 답안지 불러오기
@@ -327,12 +360,19 @@ function Test({ userObject }) {
         });
     }, [userData])
 
+    useEffect(() => {
+        const myQuery = query(
+            collection(dbService, "classes", classCode, "tests", testCode, "reportcard")
+        );
 
+        onSnapshot(myQuery, (snapshot) => {
+            const tempArray = snapshot.docs.map((current) => (
+                current.id
+            ));
 
-    // 답안지가 없는 경우 생성
-    if (!myAnswersheets.includes(userData.userId) && userData.userType === "student") {
-        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userData.userId), { studentId: userData.userId });
-    }
+            setMyReportCards(tempArray);
+        });
+    }, [userData])
 
 
 
@@ -375,7 +415,7 @@ function Test({ userObject }) {
 
 
 
-    // 시험 정보 수정
+    // 시험 설정 수정
     async function updateTest(event) {
         event.preventDefault();
 
@@ -387,6 +427,18 @@ function Test({ userObject }) {
         });
 
         setIsEditingTestInfo(false);
+    }
+
+
+
+    // 시험 삭제
+    async function deleteTest(testCode) {
+        const ok = window.confirm("해당 시험을 삭제하시겠습니까?")
+        navigate("/class/" + classCode);
+
+        if (ok) {
+            await deleteDoc(doc(dbService, "classes", classCode, "tests", testCode));
+        }
     }
 
 
@@ -439,6 +491,7 @@ function Test({ userObject }) {
                             </button>
                         </div>
 
+                        {/* 설정 탭 */}
                         {
                             tab === 1
 
@@ -467,6 +520,10 @@ function Test({ userObject }) {
 
                                 <button className={styles.acceptButton} onClick={() => { setIsEditingTestInfo(true); }}>
                                     수정
+                                </button>
+
+                                <button className={styles.deleteButton} onClick={() => { deleteTest(testCode) }}>
+                                    삭제
                                 </button>
                             </div>
                         }
@@ -562,6 +619,7 @@ function Test({ userObject }) {
                             </div>
                         }
 
+                        {/* 문제 탭 */}
                         {
                             tab === 2
 
@@ -643,7 +701,7 @@ function Test({ userObject }) {
                                                         }}
                                                     />
                                                 </div>
-                                            
+
                                                 <span className={styles.addTypeComment}>
                                                     {questionType} 유형 문제는&nbsp;
                                                     <span className={questionType !== "서술형" ? styles.addTypeCommentBlue : styles.addTypeCommentRed}>
@@ -862,6 +920,9 @@ function Test({ userObject }) {
                             </div>
                         }
 
+
+
+                        {/* 답안지 탭 */}
                         {
                             tab === 3
 
@@ -870,9 +931,41 @@ function Test({ userObject }) {
                             <div>
                                 {myStudents.map((current) => (
                                     <div>
-                                        {current.name}&nbsp;&nbsp;&nbsp;
-                                        <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + current.studentId}>확인</Link>
+                                        {
+                                            myAnswersheets.includes(current.studentId)
+
+                                            &&
+
+                                            myReportCards.includes(current.studentId)
+
+                                                ?
+   
+                                                <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + current.studentId} style={{ textDecoration: "none" }}>
+                                                    <div className={styles.studentElementsZone}>
+                                                        <div className={styles.studentName}>
+                                                            {current.name}
+                                                        </div>
+
+                                                        <div className={styles.goToAnswersheetButton}>
+                                                            확인
+                                                        </div>
+                                                    </div>
+                                                </Link>
+
+                                                :
+
+                                                <div className={styles.studentElementsZone}>
+                                                    <div className={styles.studentName}>
+                                                        {current.name}
+                                                    </div>
+                                                    
+                                                    <div className={styles.noAnswerSheet}>
+                                                        미제출
+                                                    </div>
+                                                </div>
+                                        }
                                     </div>
+                                    
                                 ))}
                             </div>
                         }
