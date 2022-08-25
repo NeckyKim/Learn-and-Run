@@ -63,6 +63,7 @@ function Test({ userObject }) {
     const [answerSheet, setAnswerSheet] = useState({});
     const [answerSheetMessage, setAnswerSheetMessage] = useState("");
     const [showNotice, setShowNotice] = useState(true);
+    const [currentQuestion, setCurrentQuestion] = useState(1);
 
     const [isEditingTestInfo, setIsEditingTestInfo] = useState(false);
     const [newTestName, setNewTestName] = useState();
@@ -284,11 +285,11 @@ function Test({ userObject }) {
 
 
     // 답안지 제출
-    async function sendAnswerSheet(event) {
-        event.preventDefault();
+    const numberOfQuestions = Number(Object.keys(myQuestions).length);
 
+    async function sendAnswerSheet() {
         var initReportCard = {};
-        const numberOfQuestions = Number(Object.keys(myQuestions).length);
+
 
         for (var i = 0; i < numberOfQuestions; i++) {
             initReportCard[i] = "notgraded";
@@ -305,7 +306,6 @@ function Test({ userObject }) {
 
         catch (error) {
             setAnswerSheetMessage("제출 과정에서 오류가 발생했습니다.");
-            console.log(error);
         }
     }
 
@@ -314,7 +314,6 @@ function Test({ userObject }) {
     // 답안지가 없는 경우 생성
     if (!myAnswersheets.includes(userData.userId) && userData.userType === "student") {
         var initAnswerSheet = {};
-        const numberOfQuestions = Number(Object.keys(myQuestions).length);
 
         for (var i = 0; i < numberOfQuestions; i++) {
             initAnswerSheet[i] = null;
@@ -387,8 +386,30 @@ function Test({ userObject }) {
             return (() => clearInterval(id))
         }, []);
 
+        var startTime = new Date(testInfo.testDate);
+        var currentTime = time
+        var finishTime = new Date(testInfo.testDate + Number(testInfo.testTime) * 60000);
+
+        var currentProgress = (currentTime.getTime() - startTime.getTime()) / (finishTime.getTime() - startTime.getTime());
+
+        var minutes = Math.floor((finishTime.getTime() - currentTime.getTime()) / 60000);
+
+        var seconds = Math.floor((((finishTime.getTime() - currentTime.getTime()) / 60000) - minutes) * 60);
+
         return (
-            <span>{time.toLocaleDateString()}<br />{time.toLocaleTimeString()}</span>
+            <div className={styles.runningTimeContainer}>
+                <progress className={styles.runningTimeBar} value={currentProgress} max={1} />
+
+                <div className={styles.runningTimeValue}>
+                    <div className={styles.runningTimeValueLeft}>
+                        남은 시간
+                    </div>
+
+                    <div className={styles.runningTimeValueRight}>
+                        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                    </div>
+                </div>
+            </div>
         )
     }
 
@@ -396,9 +417,9 @@ function Test({ userObject }) {
 
     // 현재 시험 응시 가능 확인
     function isTestTime() {
-        var startTime = new Date(testInfo.testDate).toLocaleString();
-        var currentTime = time.toLocaleString();
-        var finishTime = new Date(testInfo.testDate + Number(testInfo.testTime) * 60000).toLocaleString();
+        var startTime = new Date(testInfo.testDate)
+        var currentTime = time
+        var finishTime = new Date(testInfo.testDate + Number(testInfo.testTime) * 60000);
 
         if (currentTime < startTime) {
             return "before"
@@ -444,15 +465,14 @@ function Test({ userObject }) {
 
 
     return (
-        <div className={styles.testContainer}>
-
+        <div>
             {
                 myClasses.includes(classCode) && myTests.includes(testCode) && userData.userType === "teacher"
 
                     ?
 
                     // 강사 전용 화면
-                    <div>
+                    <div className={styles.testContainerTeacher}>
                         <div className={styles.className}>
                             {classInfo?.className}
                         </div>
@@ -515,7 +535,7 @@ function Test({ userObject }) {
 
                                 <div className={styles.testInfoElements}>
                                     <span className={styles.grayFont}>시험지 및 점수 공개</span>
-                                    <span className={styles.blueFont}>{testInfo?.testFeedback ? "공개 안 함" : "공개 함"}</span>
+                                    <span className={styles.blueFont}>{testInfo?.testFeedback ? "공개 함" : "공개 안 함"}</span>
                                 </div>
 
                                 <button className={styles.acceptButton} onClick={() => { setIsEditingTestInfo(true); }}>
@@ -934,12 +954,12 @@ function Test({ userObject }) {
                                         {
                                             myAnswersheets.includes(current.studentId)
 
-                                            &&
+                                                &&
 
-                                            myReportCards.includes(current.studentId)
+                                                myReportCards.includes(current.studentId)
 
                                                 ?
-   
+
                                                 <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + current.studentId} style={{ textDecoration: "none" }}>
                                                     <div className={styles.studentElementsZone}>
                                                         <div className={styles.studentName}>
@@ -958,14 +978,14 @@ function Test({ userObject }) {
                                                     <div className={styles.studentName}>
                                                         {current.name}
                                                     </div>
-                                                    
+
                                                     <div className={styles.noAnswerSheet}>
                                                         미제출
                                                     </div>
                                                 </div>
                                         }
                                     </div>
-                                    
+
                                 ))}
                             </div>
                         }
@@ -974,7 +994,7 @@ function Test({ userObject }) {
                     :
 
                     // 학생 전용 화면
-                    <div>
+                    <div className={styles.testContainerStudent}>
 
                         {
                             myStudents.map(row => row.studentId).includes(userObject.uid) && userData.userType === "student"
@@ -982,49 +1002,6 @@ function Test({ userObject }) {
                                 ?
 
                                 <div>
-                                    <div className={styles.className}>
-                                        {classInfo?.className}
-                                    </div>
-
-                                    <div className={styles.classCode}>
-                                        {classInfo?.teacherName}
-                                    </div>
-                                    <br />
-
-                                    <div className={styles.className}>
-                                        {testInfo?.testName}
-                                    </div>
-                                    <br />
-
-
-
-                                    <div className={styles.timeContainer}>
-                                        <div>
-                                            <div className={styles.timeSmallText}>시작 시간</div>
-                                            <div className={styles.timeBigText}>
-                                                {new Date(testInfo?.testDate).toLocaleDateString()}<br />
-                                                {new Date(testInfo?.testDate).toLocaleTimeString()}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className={styles.timeSmallText}>현재 시간</div>
-                                            <div className={styles.timeBigText}><CurrentTime /></div>
-                                        </div>
-
-                                        <div>
-                                            <div className={styles.timeSmallText}>종료 시간</div>
-                                            <div className={styles.timeBigText}>
-                                                {new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleDateString()}<br />
-                                                {new Date(testInfo?.testDate + testInfo?.testTime * 60000).toLocaleTimeString()}
-                                            </div>
-                                        </div>
-
-                                        {/* 응시 가능 여부 : {isTestTime() ? "가능" : "불가능"}<br /> */}
-                                    </div>
-
-
-
                                     {
                                         isTestTime() === "running"
 
@@ -1048,21 +1025,69 @@ function Test({ userObject }) {
 
                                                     :
 
-                                                    <div>
-                                                        {
-                                                            myQuestions.map((current, index) => (
-                                                                <div>
-                                                                    <Question number={index} points={current.points} type={current.type} question={current.question} choices={current.choice} answer={current.answer} id={current.id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} buttons={false} />
-                                                                    <br />
-                                                                </div>
-                                                            ))
-                                                        }
-                                                        <button onClick={sendAnswerSheet}>
-                                                            제출
-                                                        </button>
-                                                        {answerSheetMessage}
+                                                    <div className={styles.mainContainer}>
+                                                        <div className={styles.infoContainer}>
+                                                            <div className={styles.classCode}>
+                                                                {classInfo?.className}
+                                                            </div>
 
-                                                        <br /><br />
+                                                            <div className={styles.className}>
+                                                                {testInfo?.testName}
+                                                            </div>
+                                                            <br />
+
+                                                            <CurrentTime />
+                                                            <br />
+
+                                                            <div className={styles.questionButtonsZone}>
+                                                                {
+                                                                    myQuestions.map((current, index) => (
+                                                                        <button className={currentQuestion === index + 1 ? styles.questionButtonOn : styles.questionButtonOff} 
+                                                                            onClick={() => {
+                                                                            setCurrentQuestion(index + 1);
+                                                                            sendAnswerSheet();
+                                                                        }}>
+                                                                            {index + 1}
+                                                                        </button>
+                                                                    ))
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className={styles.containerLine}>
+                                                        </div>
+
+                                                        <div className={styles.questionContainer}>
+                                                            <button className={Number(currentQuestion) !== 1 ? styles.questionMoveButtonOn : styles.questionMoveButtonOff}
+                                                                onClick={() => {
+                                                                    if (currentQuestion !== 1) {
+                                                                        setCurrentQuestion(currentQuestion - 1);
+                                                                        sendAnswerSheet();
+                                                                    }
+                                                                }}>
+                                                                &lt;
+                                                            </button>
+
+                                                            <div>
+                                                                <Question number={currentQuestion - 1} numberOfQuestions={numberOfQuestions} points={myQuestions[currentQuestion - 1].points} type={myQuestions[currentQuestion - 1].type} question={myQuestions[currentQuestion - 1].question} choices={myQuestions[currentQuestion - 1].choice} answer={myQuestions[currentQuestion - 1].answer} id={myQuestions[currentQuestion - 1].id} classCode={classCode} testCode={testCode} userType={userData.userType} answerSheet={answerSheet} answerSheetChange={setAnswerSheet} buttons={false} />
+
+                                                                <br />
+                                                                <div className={styles.answerSheetMessage}>
+                                                                    {answerSheetMessage}
+                                                                </div>
+                                                                <br />
+                                                            </div>
+
+                                                            <button className={Number(currentQuestion) !== numberOfQuestions ? styles.questionMoveButtonOn : styles.questionMoveButtonOff}
+                                                                onClick={() => {
+                                                                    if (currentQuestion !== numberOfQuestions) {
+                                                                        setCurrentQuestion(currentQuestion + 1);
+                                                                        sendAnswerSheet();
+                                                                    }
+                                                                }}>
+                                                                &gt;
+                                                            </button>
+                                                        </div>
                                                     </div>
                                             }
                                         </div>

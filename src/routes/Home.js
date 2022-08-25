@@ -296,7 +296,6 @@ function Home({ userObject }) {
 
                                                                 <div className={styles.goToClassButton}>
                                                                     강의실 가기
-                                                                    <img alt="home" src={process.env.PUBLIC_URL + "/icon/goToClass.png"} />
                                                                 </div>
                                                             </div>
                                                         </Link>

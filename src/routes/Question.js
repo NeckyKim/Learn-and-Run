@@ -8,7 +8,7 @@ import styles from "./Question.module.css"
 
 
 
-function Question({ number, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange, buttons, mode }) {
+function Question({ number, numberOfQuestions, points, question, type, choices, answer, id, classCode, testCode, userType, answerSheet, answerSheetChange, buttons, mode }) {
     const [isEditingQuestion, setIsEditingQuestion] = useState(false);
     const [newPoints, setNewPoints] = useState(points);
     const [newQuestion, setNewQuestion] = useState(question);
@@ -81,20 +81,6 @@ function Question({ number, points, question, type, choices, answer, id, classCo
     return (
         <div>
             <div>
-                <div className={styles.questionInfo}>
-                    <div className={styles.questionNumber}>
-                        {number + 1}.
-                    </div>
-
-                    <div className={styles.pointsContainer}>
-                        {points}점
-                    </div>
-                </div>
-
-                <div className={styles.questionContainer}>
-                    {question}
-                </div>
-
                 {
                     userType === "teacher" || mode === "feedback"
 
@@ -102,6 +88,20 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
                         // 강사 전용 정답칸, 수정 버튼, 삭제 버튼
                         <div>
+                            <div className={styles.questionInfo}>
+                                <div className={styles.questionNumber}>
+                                    {number + 1}.
+                                </div>
+
+                                <div className={styles.pointsContainer}>
+                                    {points}점
+                                </div>
+                            </div>
+
+                            <div className={styles.questionContainer}>
+                                {question}
+                            </div>
+
                             {
                                 type === "주관식"
 
@@ -125,6 +125,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                     <div className={styles.answerZone}>
                                         정답
                                     </div>
+
                                     <div className={styles.choicesContainer}>
                                         {Object.keys(choices).length >= 1 && <div className={answer === 0 ? styles.answerBlue : styles.answerGray}>{choices[0]}</div>}
                                         {Object.keys(choices).length >= 2 && <div className={answer === 1 ? styles.answerBlue : styles.answerGray}>{choices[1]}</div>}
@@ -180,6 +181,20 @@ function Question({ number, points, question, type, choices, answer, id, classCo
 
                         // 학생 전용 답안 입력칸
                         <div>
+                            <div className={styles.questionInfo}>
+                                <div className={styles.questionNumber}>
+                                    {number + 1} / {numberOfQuestions}
+                                </div>
+
+                                <div className={styles.pointsContainer}>
+                                    {points}점
+                                </div>
+                            </div>
+
+                            <div className={styles.questionContainer}>
+                                {question}
+                            </div>
+
                             {
                                 type === "주관식"
 
@@ -232,6 +247,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                         답안
                                     </div>
 
+                                    <div className={styles.choicesContainer}>
                                     {Object.keys(choices).length >= 1 && <button className={answerSheet[number] === "0" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={0} onClick={onChangeAnswerSheet}>{choices[0]}</button>}
 
                                     {Object.keys(choices).length >= 2 && <button className={answerSheet[number] === "1" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={1} onClick={onChangeAnswerSheet}>{choices[1]}</button>}
@@ -251,6 +267,7 @@ function Question({ number, points, question, type, choices, answer, id, classCo
                                     {Object.keys(choices).length >= 9 && <button className={answerSheet[number] === "8" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={8} onClick={onChangeAnswerSheet}>{choices[8]}</button>}
 
                                     {Object.keys(choices).length >= 10 && <button className={answerSheet[number] === "9" ? styles.answerBlue : styles.answerGray} type="button" name={number} value={9} onClick={onChangeAnswerSheet}>{choices[9]}</button>}
+                                    </div>
                                 </div>
                             }
 

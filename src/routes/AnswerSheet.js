@@ -227,7 +227,7 @@ function AnswerSheet({ userObject }) {
 
 
 
-    
+
 
     // 제출된 답안지 자동 채점
     const numberOfQuestions = myQuestions?.length
@@ -239,49 +239,52 @@ function AnswerSheet({ userObject }) {
             if (myQuestions[i].type === "객관식" || myQuestions[i].type === "주관식" || myQuestions[i].type === "진위형") {
                 if (reportCard[i] === "notgraded") {
                     if (String(myQuestions[i].answer) === answerSheet[i]) {
-                        
-                        newReportCard[i] = true;
+                        newReportCard[i] = Number(myQuestions[i].points);
                     }
 
                     else {
-                        newReportCard[i] = false;
+                        newReportCard[i] = 0;
                     }
                 }
             }
         }
-        
+
         updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), newReportCard);
     }, [reportCard])
 
 
 
     // 점수 계산
-    
+
     useEffect(() => {
         var studentsScore = 0;
         var totalScore = 0;
         var correctAnswers = 0;
-        
+
         for (var i = 0; i < numberOfQuestions; i++) {
-            if (reportCard[i] === true) {
-                studentsScore = studentsScore + Number(myQuestions[i].points);
+            if (reportCard[i] === Number(myQuestions[i].points)) {
+                studentsScore = studentsScore + Number(reportCard[i]);
                 correctAnswers = correctAnswers + 1;
             }
-    
+
+            else if (reportCard[i] > 0) {
+                studentsScore = studentsScore + Number(reportCard[i]);
+            }
+
             totalScore = totalScore + Number(myQuestions[i].points);
         }
 
         updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), {
-            studentsScore : studentsScore,
-            totalScore : totalScore,
-            correctAnswers : correctAnswers
+            studentsScore: studentsScore,
+            totalScore: totalScore,
+            correctAnswers: correctAnswers
         });
     }, [reportCard])
 
-    
+
 
     // 정답 개수 계산 
-    
+
 
     return (
         <div className={styles.answersheetContainer}>
@@ -314,8 +317,8 @@ function AnswerSheet({ userObject }) {
                     <div className={styles.studentContainer}>
                         <div className={styles.studentName}>
                             <div className={styles.statisticType}>
-                                    학생 이름
-                                </div>
+                                학생 이름
+                            </div>
 
                             {studentInfo.name}
                         </div>
@@ -357,7 +360,10 @@ function AnswerSheet({ userObject }) {
                                 </div>
 
                                 <div className={styles.statisticValue}>
-                                    {reportCard.studentsScore}/{reportCard.totalScore}점
+                                    {reportCard.studentsScore}&nbsp;
+                                    <span className={styles.statisticValueSmall}>
+                                        / {reportCard.totalScore}점
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -449,45 +455,66 @@ function AnswerSheet({ userObject }) {
                                         {
                                             reportCard[index] === "notgraded"
 
-                                            ?
+                                                ?
 
-                                            <div className={styles.gradingContainerNormal}>
-                                                <div className={styles.answerZone}>
-                                                    {answerSheet[index]}
-                                                </div>
-                                            </div>
-
-                                            :
-
-                                            <div className={reportCard[index] ? styles.gradingContainerGreen : styles.gradingContainerRed}>
-                                                <div className={styles.answerZone}>
-                                                    {answerSheet[index]}
-                                                </div>
-                                            
-                                                <div className={reportCard[index] ? styles.gradingResultsGreen : styles.gradingResultsRed}>
-                                                    <div className={reportCard[index] && styles.gradingResultsGreenLeft}>
-                                                        {reportCard[index] ? "정답" : "오답"}
-                                                    </div>
-
-                                                    <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                        {reportCard[index] && <span>+{current.points}점</span>}
+                                                <div className={styles.gradingContainerNormal}>
+                                                    <div className={styles.answerZone}>
+                                                        {answerSheet[index]}
                                                     </div>
                                                 </div>
-                                            </div>
+
+                                                :
+
+                                                <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingContainerGreen : styles.gradingContainerYellow) : styles.gradingContainerRed}>
+                                                    <div className={styles.answerZone}>
+                                                        {answerSheet[index]}
+                                                    </div>
+
+                                                    <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingResultsGreen : styles.gradingResultsYellow) : styles.gradingResultsRed}>
+                                                        <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingResultsGreenLeft : styles.gradingResultsYellowLeft) : styles.gradingResultsRed}>
+                                                            {reportCard[index] ? (reportCard[index] === Number(current.points) ? "정답" : "부분 정답") : "오답"}
+                                                        </div>
+
+                                                        <div className={reportCard[index] && styles.gradingResultsGreenRight}>
+                                                            {reportCard[index] > 0 && <span>+{reportCard[index]}점</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                         }
 
                                         <button onClick={() => {
-                                                updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), {[index] : true})
-                                            } 
+                                            updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), { [index]: Number(current.points) })
+                                        }
                                         }>
                                             정답 처리
                                         </button>
 
                                         <button onClick={() => {
-                                                updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), {[index] : false})
-                                            } 
+                                            updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), { [index]: 0 })
+                                        }
                                         }>
                                             오답 처리
+                                        </button>
+
+                                        <button onClick={() => {
+                                            var somePoints = Number(prompt("부여할 점수를 입력하세요."));
+
+                                            if (!isNaN(somePoints)) {
+                                                if (somePoints <= Number(current.points)) {
+                                                    updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), { [index]: somePoints });
+                                                }
+
+                                                else {
+                                                    alert("입력한 점수가 배점보다 큽니다.");
+                                                }
+                                            }
+
+                                            else {
+                                                alert("숫자를 입력해야 합니다.");
+                                            }
+                                        }
+                                        }>
+                                            부분 점수 부여
                                         </button>
                                     </div>
                                 }
@@ -523,8 +550,8 @@ function AnswerSheet({ userObject }) {
                     <div className={styles.studentContainer}>
                         <div className={styles.studentName}>
                             <div className={styles.statisticType}>
-                                    학생 이름
-                                </div>
+                                학생 이름
+                            </div>
 
                             {studentInfo.name}
                         </div>
@@ -660,18 +687,18 @@ function AnswerSheet({ userObject }) {
                                                 &&
 
                                                 <div>
-                                                    <div className={reportCard[index] ? styles.gradingContainerGreen : styles.gradingContainerRed}>
+                                                    <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingContainerGreen : styles.gradingContainerYellow) : styles.gradingContainerRed}>
                                                         <div className={styles.answerZone}>
                                                             {answerSheet[index]}
                                                         </div>
 
-                                                        <div className={reportCard[index] ? styles.gradingResultsGreen : styles.gradingResultsRed}>
-                                                            <div className={reportCard[index] && styles.gradingResultsGreenLeft}>
-                                                                {reportCard[index] ? "정답" : "오답"}
+                                                        <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingResultsGreen : styles.gradingResultsYellow) : styles.gradingResultsRed}>
+                                                            <div className={reportCard[index] ? (reportCard[index] === Number(current.points) ? styles.gradingResultsGreenLeft : styles.gradingResultsYellowLeft) : styles.gradingResultsRed}>
+                                                                {reportCard[index] ? (reportCard[index] === Number(current.points) ? "정답" : "부분 정답") : "오답"}
                                                             </div>
 
                                                             <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                                {reportCard[index] && <span>+{current.points}점</span>}
+                                                                {reportCard[index] > 0 && <span>+{reportCard[index]}점</span>}
                                                             </div>
                                                         </div>
                                                     </div>

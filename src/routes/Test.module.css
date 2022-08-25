@@ -1,5 +1,18 @@
-.testContainer {
+.testContainerTeacher {
     width: 60vw;
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 10px;
+    box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
+    display: block;
+    margin: 0px auto;
+    margin-top: 120px;
+    margin-bottom: 60px;
+}
+
+.testContainerStudent {
+    width: 80vw;
     padding: 20px;
     background-color: rgb(255, 255, 255);
     border: 1px solid rgb(230, 230, 230);
@@ -15,7 +28,6 @@
     font-size: 1.2rem;
     font-weight: 1000;
 }
-
 
 .classCode {
     font-size: 0.8rem;
@@ -229,7 +241,6 @@
     background-color: rgb(235, 235, 235);
 }
 
-
 .choicesButtonZone {
     text-align: right;
 }
@@ -398,6 +409,129 @@
     text-align: center;
 }
 
+.mainContainer {
+    display: grid;
+    grid-template-columns: 220px 1px 10fr;
+    gap: 30px;
+}
+
+.infoContainer {
+    margin-left: 10px;
+}
+
+.containerLine {
+    width: 1px;
+    border-left: 1px solid rgb(220, 220, 220);
+    padding: 0px;
+}
+
+.questionButtonsZone {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 5px;
+}
+
+.questionButtonOn {
+    border: none;
+    background-color: rgb(0, 100, 255);
+    color: rgb(255, 255, 255);
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 1000;
+    height: 40px;
+    cursor: pointer;
+}
+
+.questionButtonOff {
+    border: none;
+    background-color: rgb(230, 230, 230);
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 1000;
+    height: 40px;
+    cursor: pointer;
+}
+
+.questionContainer {
+    display: grid;
+    grid-template-columns: 35px 1fr 35px;
+    gap: 20px;
+}
+
+.questionMoveButtonOn {
+    font-size: 2rem;
+    font-weight: 1000;
+    font-family: NanumGothic;
+    width: 35px;
+    border: none;
+    border-radius: 5px;
+    background-color: transparent;
+    color: rgb(0, 100, 255);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.questionMoveButtonOff {
+    font-size: 2rem;
+    font-weight: 1000;
+    font-family: NanumGothic;
+    width: 35px;
+    border: none;
+    border-radius: 5px;
+    background-color: transparent;
+    color: rgb(200, 200, 200);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.runningTimeContainer {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.runningTimeBar {
+    appearance: none;
+    width: 100%;
+    height: 20px;
+}
+
+.runningTimeBar::-webkit-progress-bar {
+    border-radius: 5px;
+    background:rgb(180, 180, 180);
+}
+
+.runningTimeBar::-webkit-progress-value {
+    border-radius: 5px;
+    background: rgb(255, 50, 50);
+}
+
+.runningTimeValue {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
+.runningTimeValueLeft {
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 1000;
+    color: rgb(255, 50, 50);
+}
+
+.runningTimeValueRight {
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 1000;
+    color: rgb(255, 50, 50);
+}
+
+.answerSheetMessage {
+    font-size: 0.8rem;
+    text-align: right;
+    font-weight: 1000;
+    color: rgb(180, 180, 180);
+}
+
 .testInfoElements {
     margin-bottom: 10px;
 }
@@ -452,8 +586,9 @@
 }
 
 
+
 @media screen and (max-width: 1200px) {
-    .testContainer {
+    .testContainerTeacher {
         width: 90vw;
     }
 }
