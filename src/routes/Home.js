@@ -1,16 +1,10 @@
-import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
 import { collection, documentId } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { where } from "firebase/firestore";
+import { doc, addDoc, setDoc } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 
 import styles from "./Home.module.css"
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 
 import { signInWithPopup } from "firebase/auth";
@@ -6,9 +5,7 @@ import { getAuth } from "firebase/auth";
 import { setPersistence } from "firebase/auth";
 import { browserSessionPersistence } from "firebase/auth";
 
-import { GoogleAuthProvider } from "firebase/auth";
-import { FacebookAuthProvider } from "firebase/auth";
-import { TwitterAuthProvider } from "firebase/auth";
+import { GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider } from "firebase/auth";
 
 import styles from "./Auth.module.css"
 

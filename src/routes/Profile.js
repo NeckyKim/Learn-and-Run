@@ -6,9 +6,7 @@ import { useState } from "react";
 import { authService } from "../FirebaseModules";
 import { dbService } from "../FirebaseModules";
 import { collection, documentId } from "firebase/firestore";
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { where } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 
 import styles from "./Profile.module.css"
 

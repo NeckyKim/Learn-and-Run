@@ -7,7 +7,7 @@
     box-shadow: 0px 5px 10px 0px rgba(150, 150, 150, 0.3);
     display: block;
     margin: 0px auto;
-    margin-top: 120px;
+    margin-top: 200px;
     margin-bottom: 60px;
 }
 
@@ -24,7 +24,6 @@
 
 .tabButtonZone {
     border-bottom: 1px solid rgb(200, 200, 200);
-    margin-top: 10px;
     margin-bottom: 20px;
 }
 

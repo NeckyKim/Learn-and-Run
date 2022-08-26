@@ -1,18 +1,8 @@
-import React from 'react';
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
-import { dbService } from "../FirebaseModules";
-import { collection, documentId } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { where } from "firebase/firestore";
 
-import Navigation from '../routes/Navigation';
+import HeaderTop from '../routes/HeaderTop';
 import Auth from '../routes/Auth';
 import Home from '../routes/Home';
 import Profile from '../routes/Profile';
@@ -27,7 +17,7 @@ function AppRouter({ isLoggedIn, userObject }) {
         <div>
             <BrowserRouter>
                 {
-                    isLoggedIn && <Navigation userObject={userObject} />
+                    isLoggedIn && <HeaderTop userObject={userObject} />
                 }
 
                 <div>

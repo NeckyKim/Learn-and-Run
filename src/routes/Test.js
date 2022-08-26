@@ -1,23 +1,14 @@
-import { useParams } from "react-router";
-import { useEffect } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
-import { collection } from "firebase/firestore";
-import { documentId } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
-import { updateDoc } from "firebase/firestore";
-import { deleteDoc } from "firebase/firestore";
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
-import { where } from "firebase/firestore";
+import { collection, documentId } from "firebase/firestore";
+import { doc, addDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { onSnapshot, query, where, orderBy } from "firebase/firestore";
 
 import Question from "./Question";
+import HeaderBottom from "./HeaderBottom";
 
 import styles from "./Test.module.css";
 
@@ -398,8 +389,6 @@ function Test({ userObject }) {
 
         return (
             <div className={styles.runningTimeContainer}>
-                <progress className={styles.runningTimeBar} value={currentProgress} max={1} />
-
                 <div className={styles.runningTimeValue}>
                     <div className={styles.runningTimeValueLeft}>
                         남은 시간
@@ -409,6 +398,8 @@ function Test({ userObject }) {
                         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
                     </div>
                 </div>
+
+                <progress className={styles.runningTimeBar} value={currentProgress} max={1} />
             </div>
         )
     }
@@ -463,9 +454,10 @@ function Test({ userObject }) {
     }
 
 
-
     return (
         <div>
+            <HeaderBottom className={classInfo?.className} classCode={classCode} testName={testInfo?.testName} testCode={testCode} />
+
             {
                 myClasses.includes(classCode) && myTests.includes(testCode) && userData.userType === "teacher"
 
@@ -473,23 +465,6 @@ function Test({ userObject }) {
 
                     // 강사 전용 화면
                     <div className={styles.testContainerTeacher}>
-                        <div className={styles.className}>
-                            {classInfo?.className}
-                        </div>
-
-                        <div className={styles.classCode}>
-                            {classCode}
-                        </div>
-                        <br />
-
-                        <div className={styles.className}>
-                            {testInfo?.testName}
-                        </div>
-
-                        <div className={styles.classCode}>
-                            {testCode}
-                        </div>
-
                         {/* 메뉴 탭 */}
                         <div className={styles.tabButtonZone}>
                             <button
@@ -1027,33 +1002,24 @@ function Test({ userObject }) {
 
                                                     <div className={styles.mainContainer}>
                                                         <div className={styles.infoContainer}>
-                                                            <div className={styles.classCode}>
-                                                                {classInfo?.className}
-                                                            </div>
-
-                                                            <div className={styles.className}>
-                                                                {testInfo?.testName}
-                                                            </div>
-                                                            <br />
-
                                                             <CurrentTime />
                                                             <br />
 
                                                             <div className={styles.questionButtonsZone}>
                                                                 {
                                                                     myQuestions.map((current, index) => (
-                                                                        <button className={currentQuestion === index + 1 ? styles.questionButtonOn : styles.questionButtonOff} 
+                                                                        <button className={currentQuestion === index + 1 ? styles.questionButtonOn : styles.questionButtonOff}
                                                                             onClick={() => {
-                                                                            setCurrentQuestion(index + 1);
-                                                                            sendAnswerSheet();
-                                                                        }}>
+                                                                                setCurrentQuestion(index + 1);
+                                                                                sendAnswerSheet();
+                                                                            }}>
                                                                             {index + 1}
                                                                         </button>
                                                                     ))
                                                                 }
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className={styles.containerLine}>
                                                         </div>
 
@@ -1097,9 +1063,59 @@ function Test({ userObject }) {
                                         isTestTime() === "before"
 
                                         &&
+                                        <div className={styles.mainContainer}>
+                                            <div className={styles.infoContainer}>
+                                                <div className={styles.classCode}>
+                                                    {classInfo?.className}
+                                                </div>
 
-                                        <div className={styles.notTestTime}>
-                                            시험 시작 전입니다.
+                                                <div className={styles.className}>
+                                                    {testInfo?.testName}
+                                                </div>
+                                                <br />
+                                            </div>
+
+                                            <div className={styles.containerLine}>
+                                            </div>
+
+
+                                            <div className={styles.beforeTestTime}>
+                                                <div className={styles.beforeTestTimeContainer}>
+                                                    <div className={styles.beforeTestTimeElements}>
+                                                        <span className={styles.beforeTestTimeLeft}>
+                                                            시작 시각
+                                                        </span>
+
+                                                        <span className={styles.beforeTestTimeRight}>
+                                                            {new Date(testInfo.testDate).toLocaleString()}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className={styles.beforeTestTimeElements}>
+                                                        <span className={styles.beforeTestTimeLeft}>
+                                                            진행 시간
+                                                        </span>
+
+                                                        <span className={styles.beforeTestTimeRight}>
+                                                            {testInfo.testTime}분
+                                                        </span>
+                                                    </div>
+
+                                                    <div className={styles.beforeTestTimeElements}>
+                                                        <span className={styles.beforeTestTimeLeft}>
+                                                            종료 시각
+                                                        </span>
+
+                                                        <span className={styles.beforeTestTimeRight}>
+                                                            {new Date(testInfo.testDate + Number(testInfo.testTime) * 60000).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className={styles.beforeTestTimeComment}>
+                                                    시험 시작 전입니다.
+                                                </div>
+                                            </div>
                                         </div>
                                     }
 
@@ -1108,30 +1124,51 @@ function Test({ userObject }) {
 
                                         &&
 
-                                        <div className={styles.notTestTime}>
-                                            시험이 종료되었습니다.
+                                        <div className={styles.mainContainer}>
+                                            <div className={styles.infoContainer}>
+                                                <div className={styles.classCode}>
+                                                    {classInfo?.className}
+                                                </div>
 
-                                            <div>
-                                                {
-                                                    testInfo.testFeedback === true
+                                                <div className={styles.className}>
+                                                    {testInfo?.testName}
+                                                </div>
+                                                <br />
+                                            </div>
 
-                                                        ?
+                                            <div className={styles.containerLine}>
+                                            </div>
 
-                                                        <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + userData.userId}>
-                                                            답안지 및 성적 확인
-                                                        </Link>
+                                            <div className={styles.afterTestTime}>
+                                                <div>
+                                                    시험이 종료되었습니다.
+                                                    <br />
 
-                                                        :
+                                                    {
+                                                        testInfo.testFeedback === true
 
-                                                        <div>
-                                                            시험 종료후 문제 및 답안이 공개되지 않은 시험입니다.
-                                                        </div>
-                                                }
+                                                            ?
+
+                                                            <Link to={"/class/" + classCode + "/test/" + testCode + "/answersheet/" + userData.userId}>
+                                                                <div className={styles.checkAnswersheetButton}>
+                                                                    답안지 및 성적 확인
+                                                                </div>
+                                                            </Link>
+
+                                                            :
+
+                                                            <div>
+                                                                시험 종료후 문제 및 답안이 공개되지 않은 시험입니다.
+                                                            </div>
+                                                    }
+                                                </div>
                                             </div>
                                         </div>
                                     }
                                 </div>
+
                                 :
+
                                 <div>
                                     접근 오류
                                 </div>

@@ -1,19 +1,13 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useEffect } from "react";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
-import { collection, deleteDoc } from "firebase/firestore";
-import { documentId } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
-import { updateDoc } from "firebase/firestore";
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
-import { where } from "firebase/firestore";
+import { collection, documentId } from "firebase/firestore";
+import { doc, addDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { onSnapshot, query, where, orderBy } from "firebase/firestore";
+
+import HeaderBottom from "./HeaderBottom";
 
 import styles from "./Class.module.css";
 
@@ -94,7 +88,7 @@ function Class({ userObject }) {
                 ...current.data()
             }));
 
-            setClassInfo(tempArray);
+            setClassInfo(tempArray[0]);
         });
     }, [])
 
@@ -302,6 +296,8 @@ function Class({ userObject }) {
 
     return (
         <div className={styles.classContainer}>
+            <HeaderBottom className={classInfo?.className} classCode={classInfo?.classCode} />
+
             {
                 myClasses.includes(classCode) && userData?.userType === "teacher"
 
@@ -309,14 +305,6 @@ function Class({ userObject }) {
 
                     // 강사 전용 화면
                     <div>
-                        <div className={styles.className}>
-                            {classInfo[0]?.className}
-                        </div>
-
-                        <div className={styles.classCode}>
-                            {classCode}
-                        </div>
-
                         {/* 메뉴 탭 */}
                         <div className={styles.tabButtonZone}>
                             <button

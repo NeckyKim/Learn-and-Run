@@ -1,21 +1,14 @@
-import React from 'react';
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import { dbService } from "../FirebaseModules";
 import { collection, documentId } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
-import { setDoc } from "firebase/firestore";
-import { updateDoc } from 'firebase/firestore';
-import { onSnapshot } from "firebase/firestore";
-import { query } from "firebase/firestore";
-import { where } from "firebase/firestore";
-import { orderBy } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
+import { onSnapshot, query, where, orderBy } from "firebase/firestore";
 
 import Question from "./Question";
+import HeaderBottom from "./HeaderBottom";
+
 import styles from "./AnswerSheet.module.css";
 
 
@@ -282,12 +275,12 @@ function AnswerSheet({ userObject }) {
     }, [reportCard])
 
 
-
-    // 정답 개수 계산 
+    console.log(answerSheet)
 
 
     return (
         <div className={styles.answersheetContainer}>
+            <HeaderBottom className={classInfo?.className} classCode={classCode} testName={testInfo?.testName} testCode={testCode} />
 
             {/* 강사 전용 화면 */}
             {
@@ -296,24 +289,6 @@ function AnswerSheet({ userObject }) {
                 &&
 
                 <div>
-                    <div className={styles.className}>
-                        {classInfo?.className}
-                    </div>
-
-                    <div className={styles.classCode}>
-                        {classCode}
-                    </div>
-                    <br />
-
-                    <div className={styles.className}>
-                        {testInfo?.testName}
-                    </div>
-
-                    <div className={styles.classCode}>
-                        {testCode}
-                    </div>
-                    <br />
-
                     <div className={styles.studentContainer}>
                         <div className={styles.studentName}>
                             <div className={styles.statisticType}>
@@ -396,7 +371,7 @@ function AnswerSheet({ userObject }) {
                                             </div>
 
                                             <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                {reportCard[index] && <span>+{current.points}점</span>}
+                                                {reportCard[index] > 0 && <span>+{current.points}점</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -418,11 +393,13 @@ function AnswerSheet({ userObject }) {
                                             </div>
 
                                             <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                {reportCard[index] && <span>+{current.points}점</span>}
+                                                {reportCard[index] > 0 && <span>+{current.points}점</span>}
                                             </div>
                                         </div>
                                     </div>
                                 }
+
+                                {console.log(current.answer)}
 
                                 {
                                     current.type === "진위형"
@@ -431,7 +408,7 @@ function AnswerSheet({ userObject }) {
 
                                     <div className={reportCard[index] ? styles.gradingContainerGreen : styles.gradingContainerRed}>
                                         <div className={styles.answerZone}>
-                                            {answerSheet[index] !== undefined && <span>{answerSheet[index] ? "참" : "거짓"}</span>}
+                                            {answerSheet[index] !== undefined && <span>{String(answerSheet[index]) === "true" ? "참" : "거짓"}</span>}
                                         </div>
 
                                         <div className={reportCard[index] ? styles.gradingResultsGreen : styles.gradingResultsRed}>
@@ -440,7 +417,7 @@ function AnswerSheet({ userObject }) {
                                             </div>
 
                                             <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                {reportCard[index] && <span>+{current.points}점</span>}
+                                                {reportCard[index] > 0 && <span>+{reportCard[index]}점</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -533,20 +510,6 @@ function AnswerSheet({ userObject }) {
 
 
                 <div>
-                    <div className={styles.className}>
-                        {classInfo?.className}
-                    </div>
-
-                    <div className={styles.classCode}>
-                        {classInfo?.teacherName}
-                    </div>
-                    <br />
-
-                    <div className={styles.className}>
-                        {testInfo?.testName}
-                    </div>
-                    <br />
-
                     <div className={styles.studentContainer}>
                         <div className={styles.studentName}>
                             <div className={styles.statisticType}>
@@ -593,7 +556,10 @@ function AnswerSheet({ userObject }) {
                                 </div>
 
                                 <div className={styles.statisticValue}>
-                                    {reportCard.studentsScore}/{reportCard.totalScore}점
+                                    {reportCard.studentsScore}&nbsp;
+                                    <span className={styles.statisticValueSmall}>
+                                        / {reportCard.totalScore}점
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -631,7 +597,7 @@ function AnswerSheet({ userObject }) {
                                                         </div>
 
                                                         <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                            {reportCard[index] && <span>+{current.points}점</span>}
+                                                            {reportCard[index] > 0 && <span>+{current.points}점</span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -653,7 +619,7 @@ function AnswerSheet({ userObject }) {
                                                         </div>
 
                                                         <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                            {reportCard[index] && <span>+{current.points}점</span>}
+                                                            {reportCard[index] > 0 && <span>+{current.points}점</span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -675,7 +641,7 @@ function AnswerSheet({ userObject }) {
                                                         </div>
 
                                                         <div className={reportCard[index] && styles.gradingResultsGreenRight}>
-                                                            {reportCard[index] && <span>+{current.points}점</span>}
+                                                            {reportCard[index] > 0 && <span>+{current.points}점</span>}
                                                         </div>
                                                     </div>
                                                 </div>

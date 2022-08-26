@@ -1,8 +1,7 @@
+import { useState } from "react";
+
 import { dbService } from "../FirebaseModules";
-import { updateDoc } from "firebase/firestore";
-import { doc } from "firebase/firestore";
-import { deleteDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 import styles from "./Question.module.css"
 
