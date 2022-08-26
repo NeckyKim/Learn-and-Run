@@ -44,14 +44,14 @@ function Navigation({ userObject }) {
     return (
         <div className={styles.container}>
             <Link to="/" style={{ textDecoration: "none" }}>
-                <span className={styles.homeButton}>
-                    learn and run
-                </span>
+                <img alt="icon" className={styles.homeButton} src={process.env.PUBLIC_URL + "/logo/classpot_white.png"} />
             </Link>
 
             {
                 currentUserData?.userType
+
                 &&
+                
                 <Link to="/profile" style={{ textDecoration: "none" }}>
                     <img alt="home" className={styles.profileIcon} src={process.env.PUBLIC_URL + "/profile/" + currentUserData.profileIcon + ".png"} />
                 </Link>

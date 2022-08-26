@@ -65,7 +65,7 @@ function Auth() {
         <div className={styles.container}>
             <div className={styles.background} />
 
-            <img alt="icon" className={styles.mainIcon} src={process.env.PUBLIC_URL + "/learn-and-run.png"} />
+            <img alt="icon" className={styles.mainIcon} src={process.env.PUBLIC_URL + "/logo/classpot_blue.png"} />
 
             <div className={styles.title}>
                 로그인
