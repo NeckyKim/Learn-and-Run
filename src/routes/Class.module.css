@@ -11,17 +11,6 @@
     margin-bottom: 60px;
 }
 
-.className {
-    font-size: 1.2rem;
-    font-weight: 1000;
-}
-
-.classCode {
-    font-size: 0.8rem;
-    font-weight: 1000;
-    color: rgb(150, 150, 150);
-}
-
 .tabButtonZone {
     border-bottom: 1px solid rgb(200, 200, 200);
     margin-bottom: 20px;
@@ -52,7 +41,7 @@
 }
 
 .message {
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: 1000;
 }
 

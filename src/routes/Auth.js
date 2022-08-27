@@ -59,33 +59,44 @@ function Auth() {
 
 
     return (
-        <div className={styles.container}>
-            <div className={styles.background} />
+        <div className={styles.background}>
+            <div className={styles.container}>
+                <div className={styles.containerLeft}>
+                    <div className={styles.comment}>
+                        학생과 선생이 하나가 되는<br />
+                        온라인 교육 플랫폼
+                    </div>
 
-            <img alt="icon" className={styles.mainIcon} src={process.env.PUBLIC_URL + "/logo/classpot_blue.png"} />
+                    <img alt="icon" className={styles.logo} src={process.env.PUBLIC_URL + "/logo/classpot_white.png"} />
+    
+                    <img alt="icon" className={styles.graphic} src={process.env.PUBLIC_URL + "/graphic/auth_01.png"} />
+                </div>
 
-            <div className={styles.title}>
-                로그인
-            </div>
-            <br />
+                <div className={styles.containerRight}>
+                    <div className={styles.title}>
+                        로그인
+                    </div>
+                    <br />
 
-            <button name="google" onClick={onSocialClick} className={styles.googleButton}>
-                <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/google.png"} />
-                Google 계정으로 로그인
-            </button>
+                    <button name="google" onClick={onSocialClick} className={styles.googleButton}>
+                        <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/google.png"} />
+                        Google 계정으로 로그인
+                    </button>
 
-            <button name="facebook" onClick={onSocialClick} className={styles.facebookButton}>
-            <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/facebook.png"} />
-                Facebook 계정으로 로그인
-            </button>
+                    <button name="facebook" onClick={onSocialClick} className={styles.facebookButton}>
+                        <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/facebook.png"} />
+                        Facebook 계정으로 로그인
+                    </button>
 
-            <button name="twitter" onClick={onSocialClick} className={styles.twitterButton}>
-            <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/twitter.png"} />
-                Twitter 계정으로 로그인
-            </button>
+                    <button name="twitter" onClick={onSocialClick} className={styles.twitterButton}>
+                        <img alt="icon" className={styles.socialLoginIcon} src={process.env.PUBLIC_URL + "/auth/twitter.png"} />
+                        Twitter 계정으로 로그인
+                    </button>
 
-            <div className={styles.errorMessage}>
-                {message}
+                    <div className={styles.errorMessage}>
+                        {message}
+                    </div>
+                </div>
             </div>
         </div>
     )

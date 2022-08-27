@@ -131,7 +131,7 @@ function AnswerSheet({ userObject }) {
     // 제출되어 있는 답안지 목록 확인
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheets"),
             orderBy("studentId", "asc")
         );
 
@@ -149,7 +149,7 @@ function AnswerSheet({ userObject }) {
     // 답안지 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheets"),
             where("studentId", "==", answersheetCode)
         );
 
@@ -186,7 +186,7 @@ function AnswerSheet({ userObject }) {
 
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "reportcard"),
+            collection(dbService, "classes", classCode, "tests", testCode, "reportcards"),
             where(documentId(), "==", answersheetCode)
         );
 
@@ -242,7 +242,7 @@ function AnswerSheet({ userObject }) {
             }
         }
 
-        updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", answersheetCode), newReportCard);
+        updateDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcards", answersheetCode), newReportCard);
     }, [reportCard])
 
 

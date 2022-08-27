@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
 import { dbService } from "../FirebaseModules";
-import { collection, documentId } from "firebase/firestore";
+import { collection, documentId, getDoc, getDocs } from "firebase/firestore";
 import { doc, addDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { onSnapshot, query, where, orderBy } from "firebase/firestore";
 
@@ -34,8 +34,9 @@ function Class({ userObject }) {
     const [myClasses, setMyClasses] = useState([]);
     const [classInfo, setClassInfo] = useState([]);
     const [myTests, setMyTests] = useState([]);
-    const [myStudents, setMyStudents] = useState([]);
-    const [studentClassInfo, setStudentsClassInfo] = useState([]);
+    const [myStudentsList, setMyStudentsList] = useState([]);
+    const [myStudentsInfo, setMyStudentsInfo] = useState([]);
+    const [studentClassInfo, setStudentClassInfo] = useState([]);
     const [findingEmailResults, setFindingEmailResults] = useState([]);
     const [findingEmailMessage, setFindingEmailMessage] = useState("");
 
@@ -79,12 +80,7 @@ function Class({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                className: current.className,
                 classCode: current.id,
-                establishedDay: current.establishedDay,
-                teacherId: current.teacherId,
-                teacherName: current.teacherName,
-
                 ...current.data()
             }));
 
@@ -97,7 +93,7 @@ function Class({ userObject }) {
     // 생성한 시험 정보 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/tests/"),
+            collection(dbService, "classes", classCode, "tests"),
             orderBy("testName", "asc")
         );
 
@@ -116,8 +112,8 @@ function Class({ userObject }) {
     // 추가한 학생 정보 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/students/"),
-            orderBy("name", "asc")
+            collection(dbService, "classes", classCode, "students"),
+            orderBy("studentId", "asc")
         );
 
         onSnapshot(myQuery, (snapshot) => {
@@ -125,27 +121,42 @@ function Class({ userObject }) {
                 ...current.data()
             }));
 
-            setMyStudents(tempArray);
+            setMyStudentsList(tempArray);
         });
     }, [])
+
+    useEffect(() => {
+        for (var i = 0; i < myStudentsList.length; i++) {
+            const myQuery = query(
+                collection(dbService, "users"),
+                where(documentId(), "==", myStudentsList[i].studentId)
+            );
+
+            onSnapshot(myQuery, (snapshot) => {
+                const tempArray = snapshot.docs.map((current) => ({
+                    ...current.data()
+                }));
+
+                setMyStudentsInfo(prev => [...prev, tempArray[0]]);
+            });
+        }
+    }, [myStudentsList])
 
 
 
     // 학생이 자신의 강의 정보 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes/" + classCode + "/students/"),
+            collection(dbService, "classes", classCode, "students"),
             where(documentId(), "==", userObject.uid)
         );
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                authenticate: current.authenticate,
-
                 ...current.data()
             }));
 
-            setStudentsClassInfo(tempArray[0]);
+            setStudentClassInfo(tempArray[0]);
         });
     }, [])
 
@@ -173,6 +184,7 @@ function Class({ userObject }) {
 
 
 
+    // 시험 생성하기
     async function createTest(event) {
         event.preventDefault();
 
@@ -199,11 +211,6 @@ function Class({ userObject }) {
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                name: current.name,
-                email: current.email,
-                userId: current.userId,
-                userType: current.userType,
-
                 ...current.data()
             }));
 
@@ -211,7 +218,7 @@ function Class({ userObject }) {
 
             if (inputStudentEmail !== "") {
                 if (tempArray.length > 0) {
-                    if (!(myStudents.map(row => row.email).includes("neckykim@gmail.com"))) {
+                    if (!(myStudentsInfo.map(row => row.email).includes("neckykim@gmail.com"))) {
                         setFindingEmailMessage("이메일이 확인되었습니다.");
                         setAuthenticateButton(true);
                     }
@@ -243,15 +250,11 @@ function Class({ userObject }) {
         try {
             await setDoc(doc(dbService, "classes", classCode, "students", findingEmailResults[0]?.userId), {
                 studentId: findingEmailResults[0]?.userId,
-                name: findingEmailResults[0]?.name,
-                email: findingEmailResults[0]?.email,
                 authenticate: false,
             });
 
             await setDoc(doc(dbService, "users", findingEmailResults[0]?.userId, "classes", classCode), {
                 classCode: classCode,
-                className: classInfo[0]?.className,
-                teacherName: classInfo[0]?.teacherName,
                 authenticate: false,
             });
 
@@ -292,7 +295,7 @@ function Class({ userObject }) {
         });
     }
 
-
+    console.log(myStudentsList)
 
     return (
         <div className={styles.classContainer}>
@@ -305,6 +308,7 @@ function Class({ userObject }) {
 
                     // 강사 전용 화면
                     <div>
+
                         {/* 메뉴 탭 */}
                         <div className={styles.tabButtonZone}>
                             <button
@@ -328,10 +332,18 @@ function Class({ userObject }) {
                             // 학생 관리 화면
                             <div>
                                 {
-                                    myStudents.map((current) => (
+                                    myStudentsList.map((current) => {
+                                        <div>
+                                            {current.authenticate ? "참" : "거짓"}
+                                        </div>
+                                    })
+                                }
+
+                                {
+                                    myStudentsInfo.map((current) => (
                                         <div className={styles.studentElementsZone}>
                                             <div className={styles.studentName}>
-                                                {current.authenticate ? current.name : "[인증 요청 중]"}
+                                                {current.name}
                                             </div>
 
                                             <div className={styles.studentEmail}>
@@ -564,30 +576,24 @@ function Class({ userObject }) {
                     // 학생 전용 화면
                     <div>
                         {
-                            studentClassInfo?.email === userObject.email
+                            studentClassInfo.studentId === userObject.uid
 
                                 ?
 
                                 <div>
                                     {
-                                        studentClassInfo?.authenticate
+                                        studentClassInfo.authenticate
 
                                             ?
 
                                             // 학생 인증이 된 경우
                                             <div>
                                                 {
-                                                    userData?.userType === "student" && myStudents.map(row => row.email).includes(userObject.email)
+                                                    userData?.userType === "student" && myStudentsInfo.map(row => row.email).includes(userObject.email)
+
                                                         ?
+
                                                         <div>
-                                                            <div className={styles.className}>
-                                                                {classInfo[0]?.className}
-                                                            </div>
-
-                                                            <div className={styles.classCode}>
-                                                                {classInfo[0]?.teacherName}
-                                                            </div>
-
                                                             {/* 메뉴 탭 */}
                                                             <div className={styles.tabButtonZone}>
                                                                 <button
@@ -630,15 +636,6 @@ function Class({ userObject }) {
 
                                             // 학생 인증이 되지 않은 경우
                                             <div>
-                                                <div className={styles.className}>
-                                                    {classInfo[0]?.className}
-                                                </div>
-
-                                                <div className={styles.classCode}>
-                                                    {classCode}
-                                                </div>
-                                                <br />
-
                                                 <div className={styles.message}>
                                                     강사가 당신을 강의에 추가했습니다. 해당 강의를 수강하시겠습니까?
                                                 </div>

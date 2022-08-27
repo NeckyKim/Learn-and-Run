@@ -144,7 +144,7 @@ function Test({ userObject }) {
     // 제출되어 있는 답안지 목록 확인
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheets"),
             orderBy("studentId", "asc")
         );
 
@@ -289,8 +289,8 @@ function Test({ userObject }) {
         initReportCard.studentsScore = "noscore";
 
         try {
-            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userObject.uid), answerSheet);
-            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcard", userObject.uid), initReportCard);
+            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheets", userObject.uid), answerSheet);
+            await setDoc(doc(dbService, "classes", classCode, "tests", testCode, "reportcards", userObject.uid), initReportCard);
 
             setAnswerSheetMessage("정상적으로 제출되었습니다. " + new Date(Date.now()).toLocaleString());
         }
@@ -311,7 +311,7 @@ function Test({ userObject }) {
         }
         initAnswerSheet.studentId = userData.userId;
 
-        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheet", userData.userId), initAnswerSheet);
+        setDoc(doc(dbService, "classes", classCode, "tests", testCode, "answersheets", userData.userId), initAnswerSheet);
     }
 
 
@@ -319,7 +319,7 @@ function Test({ userObject }) {
     // 제출되어있는 답안지 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheets"),
             where(documentId(), "==", userObject.uid)
         );
 
@@ -337,7 +337,7 @@ function Test({ userObject }) {
     // 제출되어 있는 답안지 목록 확인
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "answersheet"),
+            collection(dbService, "classes", classCode, "tests", testCode, "answersheets"),
             orderBy("studentId", "asc")
         );
 
@@ -352,7 +352,7 @@ function Test({ userObject }) {
 
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "classes", classCode, "tests", testCode, "reportcard")
+            collection(dbService, "classes", classCode, "tests", testCode, "reportcards")
         );
 
         onSnapshot(myQuery, (snapshot) => {
@@ -453,6 +453,7 @@ function Test({ userObject }) {
         }
     }
 
+    
 
     return (
         <div>

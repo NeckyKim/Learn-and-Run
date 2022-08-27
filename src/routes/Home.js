@@ -12,13 +12,13 @@ import styles from "./Home.module.css"
 
 function Home({ userObject }) {
     // 사용자 정보 불러오기
-    
+
     const [userData, setUserData] = useState([]);
     useEffect(() => {
-        const myQuery = query(collection(dbService, "users"),where(documentId(), "==", userObject.uid));
+        const myQuery = query(collection(dbService, "users"), where(documentId(), "==", userObject.uid));
 
-        onSnapshot(query(collection(dbService, "users"),where(documentId(), "==", userObject.uid)), (snapshot) => {
-            setUserData(snapshot.docs.map((current) => ({...current.data()}))[0]);
+        onSnapshot(query(collection(dbService, "users"), where(documentId(), "==", userObject.uid)), (snapshot) => {
+            setUserData(snapshot.docs.map((current) => ({ ...current.data() }))[0]);
         });
     }, [])
 
@@ -28,7 +28,8 @@ function Home({ userObject }) {
 
     const [inputClassName, setInputClassName] = useState("");
     const [teachersClasses, setTeachersClasses] = useState([]);
-    const [studentsClasses, setStudentsClasses] = useState([]);
+    const [studentsClassesList, setStudentsClassesList] = useState([]);
+    const [studentsClassesInfo, setStudentsClassesInfo] = useState([]);
 
     const [inputUserType, setInputUserType] = useState("student");
     const [inputName, setInputName] = useState("");
@@ -102,23 +103,37 @@ function Home({ userObject }) {
     // [학생] 수강 중인 강의 불러오기
     useEffect(() => {
         const myQuery = query(
-            collection(dbService, "users/" + userObject.uid + "/classes")
+            collection(dbService, "users", userObject.uid, "classes")
         );
 
         onSnapshot(myQuery, (snapshot) => {
             const tempArray = snapshot.docs.map((current) => ({
-                className: current.className,
                 classCode: current.id,
-                teacherName: current.teacherName,
-                authenticate: current.authenticate,
-
                 ...current.data()
             }));
 
-            setStudentsClasses(tempArray);
+            setStudentsClassesList(tempArray);
         });
     }, [])
 
+    useEffect(() => {
+        for (var i = 0; i < studentsClassesList.length; i++) {
+            const myQuery = query(
+                collection(dbService, "classes"),
+                where(documentId(), "==", studentsClassesList[i].classCode)
+            );
+
+            onSnapshot(myQuery, (snapshot) => {
+                const tempArray = snapshot.docs.map((current) => ({
+                    classCode : current.id,
+                    ...current.data()
+                }));
+
+                setStudentsClassesInfo(prev => [...prev, tempArray[0]]);
+            });
+        }
+    }, [studentsClassesList])
+    {console.log(studentsClassesInfo)}
 
 
     // 사용자 정보가 DB에 있는 경우 추가하기
@@ -177,27 +192,26 @@ function Home({ userObject }) {
                                     <div className={styles.classListTitle}>
                                         강의 목록
                                     </div>
-                                    {
-                                        teachersClasses.map((current) => (
-                                            <Link to={"/class/" + current.classCode} style={{ textDecoration: "none" }}>
-                                                <div className={styles.classListElements}>
-                                                    <div>
-                                                        <div className={styles.className}>
-                                                            {current.className}
+
+                                    <div className={styles.classListElementsContainer}>
+                                        {
+                                            teachersClasses.map((current) => (
+                                                <Link to={"/class/" + current.classCode} style={{ textDecoration: "none" }}>
+                                                    <div className={styles.classListElements}>
+                                                        <div className={styles.classroomImageContainer}>
+                                                            <img alt="home" className={styles.classroomImage} src={process.env.PUBLIC_URL + "/icon/classroom.png"} />
                                                         </div>
 
-                                                        <div className={styles.classCode}>
-                                                            {current.classCode}
+                                                        <div>
+                                                            <div className={styles.className}>
+                                                                {current.className}
+                                                            </div>
                                                         </div>
                                                     </div>
-
-                                                    <div className={styles.goToClassButton}>
-                                                        강의실 가기
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        ))
-                                    }
+                                                </Link>
+                                            ))
+                                        }
+                                    </div>
 
                                     <button
                                         className={styles.createClassButton}
@@ -259,37 +273,36 @@ function Home({ userObject }) {
                                         강의 목록
                                     </div>
 
-
                                     {
-                                        studentsClasses.length > 0 
+                                        studentsClassesInfo.length > 0
                                             ?
-                                            <div>
+                                            <div className={styles.classListElementsContainer}>
                                                 {
-                                                    studentsClasses.map((current) => (
+                                                    studentsClassesInfo.map((current) => (
                                                         <Link to={"/class/" + current.classCode} style={{ textDecoration: "none" }}>
                                                             <div className={styles.classListElements}>
+                                                                <div className={styles.classroomImageContainer}>
+                                                                    <img alt="home" className={styles.classroomImage} src={process.env.PUBLIC_URL + "/icon/classroom.png"} />
+                                                                </div>
+
                                                                 <div>
                                                                     <div className={styles.className}>
                                                                         {current.className}
+
                                                                         {
                                                                             !current.authenticate
-                                                                            
+
                                                                             &&
 
                                                                             <span className={styles.classWarning}>
                                                                                 인증 필요
                                                                             </span>
                                                                         }
-  
                                                                     </div>
 
-                                                                    <div className={styles.classCode}>
+                                                                    <div className={styles.teacherName}>
                                                                         {current.teacherName}
                                                                     </div>
-                                                                </div>
-
-                                                                <div className={styles.goToClassButton}>
-                                                                    강의실 가기
                                                                 </div>
                                                             </div>
                                                         </Link>
@@ -347,7 +360,7 @@ function Home({ userObject }) {
 
                             <input
                                 type="submit"
-                                value="정보 입력" 
+                                value="정보 입력"
                                 className={styles.createClassFinishButton}
                             />
                         </div>

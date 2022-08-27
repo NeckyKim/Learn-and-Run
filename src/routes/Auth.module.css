@@ -1,5 +1,5 @@
 .background {
-    background: linear-gradient(135deg, rgb(0, 200, 250) 10%, rgb(0, 100, 200) 90%);
+    background: rgb(0, 100, 255);
     width: 100vw;
     height: 100vh;
     position: absolute;
@@ -9,21 +9,37 @@
 }
 
 .container {
-    display: block;
-    margin: auto;
+    width: 800px;
+    height: 500px;
+    margin: 0px auto;
     margin-top: calc(50vh - 300px);
-    width: 400px;
-    height: 600px;
-    border-radius: 10px;
-    background-color: rgb(255, 255, 255);
-    text-align: center;
+    display: grid;
+    grid-template-columns: 400px 400px;
 }
 
-.mainIcon {
-    width: 200px;
-    display: block;
-    margin-left: 50px;
-    padding-top: 70px;
+.containerRight {
+    background-color: rgb(255, 255, 255);
+    padding: 50px;
+    border-radius: 10px;
+}
+
+.comment {
+    font-size: 1.2rem;
+    font-weight: 1000;
+    margin-bottom: 20px;
+    color: rgb(255, 255, 255);
+}
+
+.logo {
+    width: 250px;
+
+}
+
+.graphic {
+    width: 250px;
+    float: right;
+    margin-top: 100px;
+    margin-right: 50px;
 }
 
 .title {
@@ -31,8 +47,6 @@
     font-weight: 1000;
     color: rgb(0, 100, 255);
     text-align: left;
-    margin-left: 50px;
-    margin-top: 10px;
 }
 
 .errorMessage {
